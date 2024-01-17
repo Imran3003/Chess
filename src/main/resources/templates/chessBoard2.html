@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Board</title>
+    <link rel="stylesheet" href="css/chessBoard.css">
+    <link rel="stylesheet" href="../static/css/chessBoard.css"> <!--For testing-->
+
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-gap: 1px;
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .white {
+            background-color: #f0d9b5;
+            font-size: 30px;
+        }
+
+        .black {
+            background-color: #b58863;
+            font-size: 30px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="chessboard">
+
+    <!-- Rows -->
+    <div class="square white">&#9820;</div><div class="square black"> &#9822;</div><div class="square white">&#9821;</div><div class="square black">&#9819;</div>
+    <div class="square white">&#9818;</div><div class="square black">&#9821;</div><div class="square white">&#9822;</div><div class="square black">&#9820;</div>
+    <div class="square black">&#9823;</div><div class="square white">&#9823;</div><div class="square black">&#9823;</div><div class="square white">&#9823;</div>
+    <div class="square black">&#9823;</div><div class="square white">&#9823;</div><div class="square black">&#9823;</div><div class="square white">&#9823;</div>
+    <div class="square white"></div><div class="square black"></div><div class="square white"></div><div class="square black"></div>
+    <div class="square white"></div><div class="square black"></div><div class="square white"></div><div class="square black"></div>
+    <div class="square black"></div><div class="square white"></div><div class="square black"></div><div class="square white"></div>
+    <div class="square black"></div><div class="square white"></div><div class="square black"></div><div class="square white"></div>
+    <div class="square white"></div><div class="square black"></div><div class="square white"></div><div class="square black"></div>
+    <div class="square white"></div><div class="square black"></div><div class="square white"></div><div class="square black"></div>
+    <div class="square black"></div><div class="square white"></div><div class="square black"></div><div class="square white"></div>
+    <div class="square black"></div><div class="square white"></div><div class="square black"></div><div class="square white"></div>
+    <div class="square white">&#9817;</div><div class="square black">&#9817;</div><div class="square white">&#9817;</div><div class="square black">&#9817;</div>
+    <div class="square white">&#9817;</div><div class="square black">&#9817;</div><div class="square white">&#9817;</div><div class="square black">&#9817;</div>
+    <div class="square black">&#9814;</div><div class="square white">&#9816;</div><div class="square black">&#9815;</div><div class="square white">&#9813;</div>
+    <div class="square black">&#9812;</div><div class="square white">&#9815;</div><div class="square black">&#9816;</div><div class="square white">&#9814;</div>
+</div>
+</body>
+</html>
