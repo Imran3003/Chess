@@ -108,10 +108,10 @@ public class DefaultChessBoard {
 
             case ROOK:
             {
-                moveDirVsSteps.put(LEFT,10);
-                moveDirVsSteps.put(RIGHT,10);
-                moveDirVsSteps.put(FORWARD,10);
-                moveDirVsSteps.put(BACKWARD,10);
+                moveDirVsSteps.put(LEFT,7);
+                moveDirVsSteps.put(RIGHT,7);
+                moveDirVsSteps.put(FORWARD,7);
+                moveDirVsSteps.put(BACKWARD,7);
                 return moveDirVsSteps;
 
             }
@@ -123,22 +123,22 @@ public class DefaultChessBoard {
             }
             case QUEEN:
             {
-                moveDirVsSteps.put(LEFT,10);
-                moveDirVsSteps.put(RIGHT,10);
-                moveDirVsSteps.put(FORWARD,10);
-                moveDirVsSteps.put(BACKWARD,10);
-                moveDirVsSteps.put(CROSS_LEFT_BACKWARD,10);
-                moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,10);
-                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,10);
-                moveDirVsSteps.put(CROSS_LEFT_FORWARD,10);
+                moveDirVsSteps.put(LEFT,7);
+                moveDirVsSteps.put(RIGHT,7);
+                moveDirVsSteps.put(FORWARD,7);
+                moveDirVsSteps.put(BACKWARD,7);
+                moveDirVsSteps.put(CROSS_LEFT_BACKWARD,7);
+                moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,7);
+                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,7);
+                moveDirVsSteps.put(CROSS_LEFT_FORWARD,7);
                 return moveDirVsSteps;
             }
             case BISHOP:
             {
-                moveDirVsSteps.put(CROSS_LEFT_FORWARD,10);
-                moveDirVsSteps.put(CROSS_LEFT_BACKWARD,10);
-                moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,10);
-                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,10);
+                moveDirVsSteps.put(CROSS_LEFT_FORWARD,7);
+                moveDirVsSteps.put(CROSS_LEFT_BACKWARD,7);
+                moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,7);
+                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,7);
                 return moveDirVsSteps;
             }
 
@@ -146,6 +146,8 @@ public class DefaultChessBoard {
             {
                 moveDirVsSteps.put(PAWN_STARTING,2);
                 moveDirVsSteps.put(FORWARD,1);
+                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,1);
+                moveDirVsSteps.put(CROSS_LEFT_FORWARD,1);
                 return moveDirVsSteps;
             }
         }
