@@ -4,7 +4,9 @@ import com.ib.chess.modules.Coin;
 
 import java.util.*;
 
-import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.MovementDirection;
+import static com.ib.chess.modules.Constance.MovementDirection.*;
+import static com.ib.chess.modules.Constance.Position;
 
 /**
  * ValidateMoves.java
@@ -13,390 +15,118 @@ import static com.ib.chess.modules.Constance.*;
  * @module com.ib.chess.impl
  * @created Jan 16, 2024
  */
-public class ValidateMoves
-{
-    public static Set<Position> getPossibleMoves(Coin coin)
-    {
+
+
+public class ValidateMoves {
+
+    public static Set<Position> getPossibleMoves(Coin coin) {
         Position currentPosition = coin.getCurrentPosition();
-        Position defaultPosition = coin.getDefaultPosition();
         Map<MovementDirection, Integer> moveDirVsSteps = coin.getMoveDirVsSteps();
 
         Set<Position> coinPossiblePositions = new HashSet<>();
-        moveDirVsSteps.forEach((k, v) -> {
-            System.out.println("k = " + k);
-            System.out.println("v = " + v);
-            List<Position> positions = getPossiblePositions(k, v, currentPosition, defaultPosition);
+        moveDirVsSteps.forEach((direction, steps) -> {
+            List<Position> positions = getPossiblePositions(direction, steps, currentPosition);
             coinPossiblePositions.addAll(positions);
         });
-        System.out.println("coin possible positions = " + coinPossiblePositions);
         return coinPossiblePositions;
     }
 
-    private static List<Position> getPossiblePositions(MovementDirection movementDirection, int steps, Position currenPosition, Position defaultPosition)
-    {
-        System.out.println("movementDirection = " + movementDirection);
-        switch (movementDirection)
-        {
+    private static List<Position> getPossiblePositions(MovementDirection direction, int steps, Position currentPosition) {
+        switch (direction) {
             case LEFT:
-                return leftMove(steps,currenPosition,defaultPosition);
             case RIGHT:
-                return rightMove(steps,currenPosition,defaultPosition);
             case FORWARD:
-                return forwardMove(steps,currenPosition,defaultPosition);
             case BACKWARD:
-                return backwardMove(steps,currenPosition,defaultPosition);
+                return linearMove(direction, steps, currentPosition);
             case PAWN_STARTING:
-                return pawnStarting(currenPosition,defaultPosition);
-            case  CROSS_RIGHT_FORWARD:
-                return crossRightForwardMove(steps,currenPosition,defaultPosition);
+                return pawnStarting(currentPosition);
+            case CROSS_RIGHT_FORWARD:
             case CROSS_LEFT_FORWARD:
-                return crossLeftForwardMove(steps,currenPosition,defaultPosition);
-            case  CROSS_RIGHT_BACKWARD:
-                return crossRightBackwardMove(steps,currenPosition,defaultPosition);
+            case CROSS_RIGHT_BACKWARD:
             case CROSS_LEFT_BACKWARD:
-                return crossLeftBackwardMove(steps,currenPosition,defaultPosition);
+                return diagonalMove(direction, steps, currentPosition);
             case KNIGHT_L_MOVE:
-                return knightMove(currenPosition);
+                return knightMove(currentPosition);
         }
         return Collections.emptyList();
     }
 
-
-    private static List<Position> leftMove(int steps, Position currenPosition, Position defaultPosition)
-    {
+    private static List<Position> linearMove(MovementDirection direction, int steps, Position currentPosition) {
         List<Position> positions = new ArrayList<>();
 
-        int x = currenPosition.getX();
+        int x = currentPosition.getX();
+        int y = currentPosition.getY();
+        int stepModifierX = (direction == RIGHT) ? 1 : (direction == LEFT) ? -1 : 0;
+        int stepModifierY = (direction == FORWARD) ? 1 : (direction == BACKWARD) ? -1 : 0;
 
-        int curPosy = currenPosition.getY();
+        for (int i = 0; i < steps; i++) {
+            x += stepModifierX;
+            y += stepModifierY;
 
-        int defX = defaultPosition.getX();
-
-        if (defX < 5)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosy = curPosy+1;
-                if (curPosy > 7)
-                    break;
-                positions.add(Position.setPos(x, curPosy));
+            if (x < 0 || x > 7 || y < 0 || y > 7) {
+                break;
             }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosy = curPosy -1;
-                if (curPosy < 0)
-                    break;
-                positions.add(Position.setPos(x, curPosy));
-            }
+            positions.add(Position.setPos(x, y));
         }
 
         return positions;
     }
 
-    private static List<Position> rightMove(int steps, Position currenPosition, Position defaultPosition)
-    {
-
+    private static List<Position> pawnStarting(Position currentPosition) {
         List<Position> positions = new ArrayList<>();
 
-        int x = currenPosition.getX();
+        int x = currentPosition.getX();
+        int y = currentPosition.getY();
 
-        int curPosy = currenPosition.getY();
-
-        int defX = defaultPosition.getX();
-
-        if (defX < 5)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosy = curPosy-1;
-                if (curPosy < 0)
-                    break;
-                positions.add(Position.setPos(x, curPosy));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosy = curPosy +1;
-                if (curPosy > 7)
-                    break;
-                positions.add(Position.setPos(x, curPosy));
-            }
-        }
-
-        return positions;
-
-    }
-    private static List<Position> pawnStarting(Position currenPosition, Position defaultPosition)
-    {
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-        int curPosx = x;
-        int defX = defaultPosition.getX();
-
-        if (defaultPosition != currenPosition)
-            return Collections.emptyList();
-
-        if (defX < 5)
-            curPosx = curPosx+2;
-        else
-            curPosx = curPosx - 2;
-        if (curPosx == x)
-            return Collections.emptyList();
-
-        positions.add(Position.setPos(curPosx, y));
-        return positions;
-    }
-
-    private static List<Position> backwardMove(int steps, Position currenPosition, Position defaultPosition)
-    {
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-        int curPosx = x;
-
-        int defX = defaultPosition.getX();
-
-        if (defX < 5)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx-1;
-                if (curPosx < 0)
-                    break;
-                positions.add(Position.setPos(curPosx, y));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx +1;
-                if (curPosx > 7)
-                    break;
-                positions.add(Position.setPos(curPosx, y));
-            }
+        if (x == 1 || x == 6) {
+            int forwardStep = (x == 1) ? 2 : -2;
+            positions.add(Position.setPos(x + forwardStep, y));
         }
 
         return positions;
     }
 
-    private static List<Position> forwardMove(int steps, Position currenPosition, Position defaultPosition)
-    {
-
+    private static List<Position> diagonalMove(MovementDirection direction, int steps, Position currentPosition) {
         List<Position> positions = new ArrayList<>();
 
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
+        int x = currentPosition.getX();
+        int y = currentPosition.getY();
+        int stepModifierX = (direction == CROSS_RIGHT_FORWARD || direction == CROSS_LEFT_BACKWARD) ? 1 :
+                (direction == CROSS_LEFT_FORWARD || direction == CROSS_RIGHT_BACKWARD) ? -1 : 0;
+        int stepModifierY = (direction == CROSS_RIGHT_FORWARD || direction == CROSS_LEFT_FORWARD) ? 1 :
+                (direction == CROSS_RIGHT_BACKWARD || direction == CROSS_LEFT_BACKWARD) ? -1 : 0;
 
-        int curPosx = x;
-        int defX = defaultPosition.getX();
+        for (int i = 0; i < steps; i++) {
+            x += stepModifierX;
+            y += stepModifierY;
 
-        if (defX < 5)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx+1;
-                if (curPosx > 7)
-                    break;
-                positions.add(Position.setPos(curPosx, y));
+            if (x < 0 || x > 7 || y < 0 || y > 7) {
+                break;
             }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx -1;
-                if (curPosx < 0)
-                    break;
-                positions.add(Position.setPos(curPosx, y));
-            }
+            positions.add(Position.setPos(x, y));
         }
 
         return positions;
     }
 
-    private static List<Position> crossLeftForwardMove(int steps, Position currenPosition, Position defaultPosition)
-    {
-        System.out.println("==== CrossLeftForwardMove ====");
-
+    private static List<Position> knightMove(Position currentPosition) {
         List<Position> positions = new ArrayList<>();
 
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
+        int x = currentPosition.getX();
+        int y = currentPosition.getY();
 
-        int curPosx = x;
-        int curPosy = y;
-        int defX = defaultPosition.getX();
-        if (defX < 2)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx+1;
-                curPosy = curPosy+1;
-                if (curPosx > 7 || curPosy > 7)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx -1;
-                curPosy = curPosy -1;
-                if (curPosx < 0 || curPosy < 0)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
+        int[][] knightMoves = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+
+        for (int[] move : knightMoves) {
+            int newX = x + move[0];
+            int newY = y + move[1];
+
+            if (newX >= 0 && newX <= 7 && newY >= 0 && newY <= 7) {
+                positions.add(Position.setPos(newX, newY));
             }
         }
 
         return positions;
     }
-    private static List<Position> crossLeftBackwardMove(int steps, Position currenPosition, Position defaultPosition) {
-
-        System.out.println("==== CrossLeftBackwardMove ====");
-
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-        int curPosx = x;
-        int curPosy = y;
-        int defX = defaultPosition.getX();
-
-        if (defX < 2)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx-1;
-                curPosy = curPosy+1;
-                if (curPosx < 0 || curPosy > 7)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx +1;
-                curPosy = curPosy -1;
-                if (curPosx > 7 || curPosy < 0)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-
-            }
-        }
-
-        return positions;
-    }
-
-    private static List<Position> crossRightForwardMove(int steps, Position currenPosition, Position defaultPosition)
-    {
-        System.out.println("==== CrossRightForwardMove ====");
-
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-        int curPosx = x;
-        int curPosy = y;
-        int defX = defaultPosition.getX();
-
-        if (defX < 2)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx+1;
-                curPosy = curPosy-1;
-                if (curPosy < 0 || curPosx > 7)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx -1;
-                curPosy = curPosy +1;
-                if (curPosx < 0 || curPosy > 7)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-
-            }
-        }
-
-        return positions;
-
-    }
-
-    private static List<Position> crossRightBackwardMove(int steps, Position currenPosition, Position defaultPosition) {
-
-        System.out.println("==== CrossLeftForwardMove ====");
-
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-        int curPosx = x;
-        int curPosy = y;
-        int defX = defaultPosition.getX();
-
-        if (defX < 2)
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx-1;
-                curPosy = curPosy-1;
-                if (curPosx < 0 || curPosy < 0)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < steps; i++) {
-                curPosx = curPosx +1;
-                curPosy = curPosy +1;
-                if (curPosx > 7 || curPosy > 7)
-                    break;
-                positions.add(Position.setPos(curPosx,curPosy));
-
-            }
-        }
-
-        return positions;
-
-    }
-
-    private static List<Position> knightMove(Position currenPosition) {
-
-        List<Position> positions = new ArrayList<>();
-
-        int x = currenPosition.getX();
-        int y = currenPosition.getY();
-
-
-        if (x < 6 && y < 7 )
-            positions.add(Position.setPos(x + 2, y + 1));
-        if (x < 6 && y > 0)
-            positions.add(Position.setPos(x + 2, y - 1));
-        if (x > 1 &&  y > 0)
-            positions.add(Position.setPos(x - 2, y - 1));
-        if (x > 1 && y < 7)
-            positions.add(Position.setPos(x - 2, y + 1));
-        if (x < 7 && y < 6)
-            positions.add(Position.setPos(x + 1, y + 2));
-        if (x < 7 && y > 1)
-            positions.add(Position.setPos(x + 1, y - 2));
-        if (x > 0 && y < 6 && y > 1)
-            positions.add(Position.setPos(x - 1, y + 2));
-        if (x > 0 && y > 1)
-            positions.add(Position.setPos(x - 1, y - 2));
-
-        return positions;
-    }
-
-
 }
+
