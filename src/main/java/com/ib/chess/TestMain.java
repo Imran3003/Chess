@@ -1,15 +1,19 @@
 package com.ib.chess;
 
+import com.ib.chess.board.ChessGame;
 import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.impl.ValidateMoves;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Square;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-import static com.ib.chess.modules.Constance.MovementDirection.*;
-import static com.ib.chess.modules.Constance.MovementDirection.CROSS_LEFT_FORWARD;
+import static com.ib.chess.impl.ValidateMoves.filter_moves;
+import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
 /**
  * TestMain.java
@@ -20,12 +24,16 @@ import static com.ib.chess.modules.Constance.MovementDirection.CROSS_LEFT_FORWAR
  */
 public class TestMain
 {
+    
     public static void main(String[] args)
     {
 
-//        extracted();
-//        getDefaultBoard();
-        getPossibleMv();
+        ChessGame chessGame = new ChessGame();
+        chessGame.initializeCurrentBoard();
+
+        chessGame.moveCoin(extracted(), Constance.Position.setPos(0,0));
+
+        filter_moves();
     }
 
     private static void getPossibleMv()
@@ -48,14 +56,11 @@ public class TestMain
         coin.setCoinColour(Constance.Colours.BLACK);
         coin.setCoinName(Constance.Coins.KNIGHT);
 
-        coin.setDefaultPosition(Constance.Position.setPos(0,5));
-        coin.setCurrentPosition(Constance.Position.setPos(1,6));
+        coin.setDefaultPosition(Constance.Position.setPos(0,6));
+        coin.setCurrentPosition(Constance.Position.setPos(5,6));
 
         Map<Constance.MovementDirection,Integer> moveDirVsSteps = new HashMap<>();
-        moveDirVsSteps.put(CROSS_LEFT_FORWARD,7);
-        moveDirVsSteps.put(CROSS_LEFT_BACKWARD,7);
-        moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,7);
-        moveDirVsSteps.put(CROSS_RIGHT_FORWARD,7);
+        moveDirVsSteps.put(KNIGHT_L_MOVE,3);
         coin.setMoveDirVsSteps(moveDirVsSteps);
 
         return coin;

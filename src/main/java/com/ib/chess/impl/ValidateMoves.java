@@ -1,6 +1,8 @@
 package com.ib.chess.impl;
 
+import com.ib.chess.board.ChessGame;
 import com.ib.chess.modules.Coin;
+import com.ib.chess.modules.Square;
 
 import java.util.*;
 
@@ -127,6 +129,13 @@ public class ValidateMoves {
         }
 
         return positions;
+    }
+    public static void filter_moves()
+    {
+        ChessGame chessGame = new ChessGame();
+        Square[][] currentBoard = chessGame.getCurrentBoard();
+
+        System.out.println("currentBoard = " + Arrays.deepToString(currentBoard));
     }
 }
 

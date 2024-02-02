@@ -1,9 +1,11 @@
 package com.ib.chess.controller;
 
+import com.ib.chess.board.ChessGame;
 import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Square;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +13,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 public class ChessController {
+
+    @Autowired
+    ChessGame chessGame;
 
     @RequestMapping("/chess")
     public ModelAndView home(Model model) {

@@ -18,28 +18,15 @@ public class Coin
     public Position defaultPosition;
     public Position currentPosition;
     public Map<MovementDirection,Integer> moveDirVsSteps;
-    public boolean isJump;
-    public boolean isMovingBackward;
-
-    public boolean isMovingBackward() {
-        return isMovingBackward;
-    }
-
-    public void setMovingBackward(boolean movingBackward) {
-        isMovingBackward = movingBackward;
-    }
-
     public Coin() {
     }
 
-    public Coin(Coins coinName, Colours coinColour, Position defaultPosition,Position currentPosition, Map<MovementDirection, Integer> moveDirVsSteps, boolean isJump, boolean isMovingBackward) {
+    public Coin(Coins coinName, Colours coinColour, Position defaultPosition,Position currentPosition, Map<MovementDirection, Integer> moveDirVsSteps) {
         this.coinName = coinName;
         this.coinColour = coinColour;
         this.defaultPosition = defaultPosition;
         this.currentPosition = currentPosition;
         this.moveDirVsSteps = moveDirVsSteps;
-        this.isJump = isJump;
-        this.isMovingBackward = isMovingBackward;
     }
 
     public Position getCurrentPosition() {
@@ -82,23 +69,14 @@ public class Coin
         this.moveDirVsSteps = moveDirVsSteps;
     }
 
-    public boolean isJump() {
-        return isJump;
-    }
-
-    public void setJump(boolean jump) {
-        isJump = jump;
-    }
-
     @Override
     public String toString() {
         return "Coin{" +
                 "coinName=" + coinName +
                 ", coinColour=" + coinColour +
-                ", position=" + defaultPosition +
+                ", defaultPosition=" + defaultPosition +
+                ", currentPosition=" + currentPosition +
                 ", moveDirVsSteps=" + moveDirVsSteps +
-                ", isJump=" + isJump +
-                ", isMovingBackward=" + isMovingBackward +
                 '}';
     }
 }

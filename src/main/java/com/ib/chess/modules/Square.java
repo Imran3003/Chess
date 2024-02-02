@@ -1,6 +1,6 @@
 package com.ib.chess.modules;
 
-import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.Position;
 
 /**
  * Square.java
@@ -14,6 +14,8 @@ public class Square
     public Coin coin;
 
     public boolean isCoinIsPresent;
+
+    public Position squarePosition;
 
     public Square() {
     }
@@ -34,9 +36,18 @@ public class Square
         isCoinIsPresent = coinIsPresent;
     }
 
-    public Square(Coin coin, boolean isCoinIsPresent) {
+    public Square(Coin coin, boolean isCoinIsPresent, Position squrePosition) {
         this.coin = coin;
         this.isCoinIsPresent = isCoinIsPresent;
+        this.squarePosition = squrePosition;
+    }
+
+    public Position getSquarePosition() {
+        return squarePosition;
+    }
+
+    public void setSquarePosition(Position squarePosition) {
+        this.squarePosition = squarePosition;
     }
 
     @Override
@@ -44,6 +55,7 @@ public class Square
         return "Square{" +
                 "coin=" + coin +
                 ", isCoinIsPresent=" + isCoinIsPresent +
+                ", squarePosition=" + squarePosition +
                 '}';
     }
 }

@@ -3,13 +3,13 @@ package com.ib.chess.board;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Square;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.ib.chess.modules.Constance.*;
 import static com.ib.chess.modules.Constance.Coins.*;
-import static com.ib.chess.modules.Constance.Colours.*;
+import static com.ib.chess.modules.Constance.Colours.BLACK;
+import static com.ib.chess.modules.Constance.Colours.WHITE;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
 import static com.ib.chess.modules.Constance.Position.*;
 
@@ -38,7 +38,7 @@ public class DefaultChessBoard {
             for (int j = 0; j < squares.length; j++) {
                 if(squares[i][j] == null)
                 {
-                    squares[i][j] = new Square(null,false);
+                    squares[i][j] = new Square(null,false,Position.setPos(i,j));
                 }
             }
         }
@@ -69,14 +69,14 @@ public class DefaultChessBoard {
     private static void setMainCoins(Square[][] board, Map<Position,Coins> coinsPositionMap, Colours colour) {
 
         coinsPositionMap.forEach((pos,coinName)->
-                setCoins(board, colour, pos,coinName, coinName == KNIGHT));
+                setCoins(board, colour, pos,coinName));
     }
 
-    private static void setCoins(Square[][] board, Colours colour, Position position, Coins coinName, boolean isJump)
+    private static void setCoins(Square[][] board, Colours colour, Position position, Coins coinName)
     {
             int x = position.getX();
             int y = position.getY();
-            board[x][y] = new Square(new Coin(coinName,colour,position,position,setCoinMoves(coinName),isJump, true),true);
+            board[x][y] = new Square(new Coin(coinName,colour,position,position,setCoinMoves(coinName)),true,Position.setPos(x,y));
 
     }
 
@@ -84,7 +84,7 @@ public class DefaultChessBoard {
         for (Position position : positions) {
             int x = position.getX();
             int y = position.getY();
-            squares[x][y] = new Square(new Coin(PAWN,colour,position,position,setCoinMoves(PAWN),false,false),true);
+            squares[x][y] = new Square(new Coin(PAWN,colour,position,position,setCoinMoves(PAWN)),true,Position.setPos(x,y));
         }
     }
     public static Map<MovementDirection, Integer> setCoinMoves(Coins coin)
