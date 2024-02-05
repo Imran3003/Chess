@@ -1,18 +1,14 @@
 package com.ib.chess;
 
-import com.ib.chess.board.ChessGame;
-import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.impl.ValidateMoves;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Square;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.ib.chess.impl.ValidateMoves.filter_moves;
 import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
 /**
@@ -28,26 +24,21 @@ public class TestMain
     public static void main(String[] args)
     {
 
-        ChessGame chessGame = new ChessGame();
-        chessGame.initializeCurrentBoard();
-
-        chessGame.moveCoin(extracted(), Constance.Position.setPos(0,0));
-
-        filter_moves();
+//        filter_moves();
     }
 
     private static void getPossibleMv()
     {
-        Set<Constance.Position> possibleMoves = ValidateMoves.getPossibleMoves(extracted());
-        System.out.println("possibleMoves = " + possibleMoves);
+//        Set<Constance.Position> possibleMoves = ValidateMoves.getPossibleMoves(extracted(),new Square[][]{});
+//        System.out.println("possibleMoves = " + possibleMoves);
     }
     private static void validateMoves() {
     }
 
     private static void getDefaultBoard()
     {
-        Square[][] defaultBoard = DefaultChessBoard.getDefaultBoard();
-        System.out.println("defaultBoard = " + Arrays.deepToString(defaultBoard));
+//        Square[][] defaultBoard = DefaultChessBoard.getDefaultBoard();
+//        System.out.println("defaultBoard = " + Arrays.deepToString(defaultBoard));
     }
 
     private static Coin extracted() {

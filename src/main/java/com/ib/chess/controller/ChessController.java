@@ -1,7 +1,8 @@
 package com.ib.chess.controller;
 
-import com.ib.chess.board.ChessGame;
+import com.ib.chess.impl.ChessGame;
 import com.ib.chess.board.DefaultChessBoard;
+import com.ib.chess.impl.ValidateMoves;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Square;
@@ -11,28 +12,79 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
+
 @RestController
 public class ChessController {
 
     @Autowired
+    DefaultChessBoard defaultChessBoard;
+
+    @Autowired
     ChessGame chessGame;
 
-    @RequestMapping("/chess")
-    public ModelAndView home(Model model) {
-        Square[][] chessboard = DefaultChessBoard.getDefaultBoard();
+    @Autowired
+    ValidateMoves validateMoves;
 
+    public Square[][] chessboard;
+
+    @RequestMapping("/example")
+    private ModelAndView example(Model model)
+    {
+        System.out.println("currentBoard = " + Arrays.deepToString(chessboard));
+
+        Coin coin = new Coin();
+
+        coin.setCoinColour(Constance.Colours.WHITE);
+        coin.setCoinName(Constance.Coins.KNIGHT);
+
+        coin.setDefaultPosition(Constance.Position.setPos(0,6));
+        coin.setCurrentPosition(Constance.Position.setPos(0,6));
+
+        Map<Constance.MovementDirection,Integer> moveDirVsSteps = new HashMap<>();
+        moveDirVsSteps.put(KNIGHT_L_MOVE,3);
+        coin.setMoveDirVsSteps(moveDirVsSteps);
+
+        Set<Constance.Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard);
+        System.out.println("possibleMoves = " + possibleMoves);
+
+        Square[][] squares = chessGame.moveCoin(coin, Constance.Position.E2, chessboard);
+
+        StringBuilder board = setCoinsInChessBoard(squares);
+
+        model.addAttribute("chessboardHtml", board.toString());
+        return new ModelAndView("chessBoard");
+    }
+    @RequestMapping("/")
+    public ModelAndView home(Model model)
+    {
+        chessboard = defaultChessBoard.getDefaultBoard();
+
+        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard);
+
+        model.addAttribute("chessboardHtml", chessboardHtml.toString());
+        return new ModelAndView("chessBoard");
+    }
+
+    private StringBuilder setCoinsInChessBoard(Square[][] board)
+    {
         StringBuilder chessboardHtml = new StringBuilder();
 
-        for (int i = 0; i < chessboard.length; i++) {
-            for (int j = 0; j < chessboard[i].length; j++)
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++)
             {
-                Square square = chessboard[i][j];
+                Square square = board[i][j];
 
                 String squareClass = (i + j) % 2 == 0 ? "white" : "black";
 
                 if (square.isCoinIsPresent)
                 {
-                    Coin coin = chessboard[i][j].getCoin();
+                    Coin coin = board[i][j].getCoin();
                     String pieceHtml =  getPieceHtml(coin);
                     String squareHtml = String.format("<div class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\">%s</div>", squareClass,coin.getCoinColour() , coin.getCoinName(), pieceHtml);
                     chessboardHtml.append(squareHtml);
@@ -44,11 +96,8 @@ public class ChessController {
                 }
             }
         }
-
-        model.addAttribute("chessboardHtml", chessboardHtml.toString());
-        return new ModelAndView("chessBoard");
+        return chessboardHtml;
     }
-
     private String getPieceHtml(Coin coin) {
         String pieceSymbol = "";
 

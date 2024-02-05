@@ -2,6 +2,7 @@ package com.ib.chess.board;
 
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Square;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +21,10 @@ import static com.ib.chess.modules.Constance.Position.*;
  * @module com.ib.chess.board
  * @created Jan 16, 2024
  */
+
+@Component
 public class DefaultChessBoard {
-    public static Square[][] getDefaultBoard()
+    public  Square[][] getDefaultBoard()
     {
         Square[][] squares = new Square[8][8];
 
