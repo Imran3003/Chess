@@ -6,6 +6,7 @@ import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * ChessGame.java
@@ -18,7 +19,7 @@ import java.util.Arrays;
 @Component
 public class ChessGame
 {
-    public Square[][] moveCoin(Coin coin, Constance.Position movingPosition,Square[][] currentBoard)
+    public Square[][] moveCoin(Coin coin, Constance.Position movingPosition, Square[][] currentBoard, Set<Constance.Position> possibleMoves)
     {
         System.out.println("currentBoard in move coin = " + Arrays.deepToString(currentBoard));
         Constance.Position currentPosition = coin.getCurrentPosition();
@@ -37,9 +38,8 @@ public class ChessGame
 
 
 //        moving square
-        coin.setCurrentPosition(Constance.Position.setPos(movingX,movingY));
-        movingSquare.setCoin(coin);
-        movingSquare.setCoinIsPresent(true);
+        if (!possibleMoves.contains(movingPosition))
+            return currentBoard;
 
         System.out.println("movingSquare after move = " + movingSquare);
 

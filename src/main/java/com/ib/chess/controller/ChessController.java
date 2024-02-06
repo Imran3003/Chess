@@ -12,11 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import static com.ib.chess.modules.Constance.*;
 import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
 @RestController
@@ -40,22 +38,22 @@ public class ChessController {
 
         Coin coin = new Coin();
 
-        coin.setCoinColour(Constance.Colours.WHITE);
-        coin.setCoinName(Constance.Coins.KNIGHT);
+        coin.setCoinColour(Colours.WHITE);
+        coin.setCoinName(Coins.KNIGHT);
 
-        coin.setDefaultPosition(Constance.Position.setPos(0,6));
-        coin.setCurrentPosition(Constance.Position.setPos(0,6));
+        coin.setDefaultPosition(Position.setPos(0,6));
+        coin.setCurrentPosition(Position.setPos(0,6));
 
-        Map<Constance.MovementDirection,Integer> moveDirVsSteps = new HashMap<>();
+        Map<MovementDirection,Integer> moveDirVsSteps = new HashMap<>();
         moveDirVsSteps.put(KNIGHT_L_MOVE,3);
         coin.setMoveDirVsSteps(moveDirVsSteps);
 
-        Set<Constance.Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard);
+        Set<Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard);
         System.out.println("possibleMoves = " + possibleMoves);
 
-        Square[][] squares = chessGame.moveCoin(coin, Constance.Position.E2, chessboard);
+        Square[][] squares = chessGame.moveCoin(coin, Position.E2, chessboard, possibleMoves);
 
-        StringBuilder board = setCoinsInChessBoard(squares);
+        StringBuilder board = setCoinsInChessBoard(squares,possibleMoves);
 
         model.addAttribute("chessboardHtml", board.toString());
         return new ModelAndView("chessBoard");
@@ -65,13 +63,13 @@ public class ChessController {
     {
         chessboard = defaultChessBoard.getDefaultBoard();
 
-        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard);
+        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet());
 
         model.addAttribute("chessboardHtml", chessboardHtml.toString());
         return new ModelAndView("chessBoard");
     }
 
-    private StringBuilder setCoinsInChessBoard(Square[][] board)
+    private StringBuilder setCoinsInChessBoard(Square[][] board, Set<Position> possibleMoves)
     {
         StringBuilder chessboardHtml = new StringBuilder();
 
@@ -80,18 +78,30 @@ public class ChessController {
             {
                 Square square = board[i][j];
 
+                Position squarePosition = square.getSquarePosition();
+
                 String squareClass = (i + j) % 2 == 0 ? "white" : "black";
+
+                String backgroundColor = "background-color: rgba(15, 236, 15, 0.47);";// Set the background color to green
+
+                String squareHtml;
 
                 if (square.isCoinIsPresent)
                 {
                     Coin coin = board[i][j].getCoin();
                     String pieceHtml =  getPieceHtml(coin);
-                    String squareHtml = String.format("<div class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\">%s</div>", squareClass,coin.getCoinColour() , coin.getCoinName(), pieceHtml);
+                    if (!possibleMoves.contains(squarePosition))
+                        squareHtml = String.format("<div class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\">%s</div>", squareClass,coin.getCoinColour() , coin.getCoinName(), pieceHtml);
+                    else
+                        squareHtml = String.format("<div class=\"square %s\" style=\"%s\" data-coin-colour=\"%s\" data-coin-name=\"%s\">%s</div>",squareClass, backgroundColor, coin.getCoinColour(), coin.getCoinName(), pieceHtml);
                     chessboardHtml.append(squareHtml);
                 }
                 else
                 {
-                    String squareHtml = String.format("<div class=\"square %s\"></div>", squareClass);
+                    if (!possibleMoves.contains(squarePosition))
+                        squareHtml = String.format("<div class=\"square %s\"></div>", squareClass);
+                    else
+                        squareHtml = String.format("<div class=\"square %s\" style=\"%s\"></div>", squareClass, backgroundColor);
                     chessboardHtml.append(squareHtml);
                 }
             }
@@ -103,22 +113,22 @@ public class ChessController {
 
         switch (coin.getCoinName()) {
             case KING:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9812;" : "&#9818;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9812;" : "&#9818;";
                 break;
             case QUEEN:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9813;" : "&#9819;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9813;" : "&#9819;";
                 break;
             case ROOK:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9814;" : "&#9820;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9814;" : "&#9820;";
                 break;
             case BISHOP:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9815;" : "&#9821;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9815;" : "&#9821;";
                 break;
             case KNIGHT:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9816;" : "&#9822;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9816;" : "&#9822;";
                 break;
             case PAWN:
-                pieceSymbol = (coin.getCoinColour() == Constance.Colours.WHITE) ? "&#9817;" : "&#9823;";
+                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9817;" : "&#9823;";
                 break;
         }
 
