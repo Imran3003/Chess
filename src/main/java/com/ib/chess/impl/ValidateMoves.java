@@ -1,12 +1,13 @@
 package com.ib.chess.impl;
 
 import com.ib.chess.modules.Coin;
-import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.Coins.*;
 import static com.ib.chess.modules.Constance.MovementDirection;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
 import static com.ib.chess.modules.Constance.Position;
@@ -22,7 +23,8 @@ import static com.ib.chess.modules.Constance.Position;
 @Component
 public class ValidateMoves {
 
-    public  Set<Position> getPossibleMoves(Coin coin, Square[][] board) {
+    public  Set<Position> getPossibleMoves(Coin coin, Square[][] board)
+    {
         Position currentPosition = coin.getCurrentPosition();
         Map<MovementDirection, Integer> moveDirVsSteps = coin.getMoveDirVsSteps();
 
@@ -37,15 +39,15 @@ public class ValidateMoves {
 
     }
 
-    private static List<Position> getPossiblePositions(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Constance.Colours coinColour) {
+    private static List<Position> getPossiblePositions(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
         switch (direction) {
             case LEFT:
             case RIGHT:
             case FORWARD:
             case BACKWARD:
                 return linearMove(direction, steps, currentPosition,board,coinColour);
-            case PAWN_STARTING:
-                return pawnStarting(currentPosition,board);
+            case PAWN_MOVE:
+                return pawnMove(currentPosition,board);
             case CROSS_RIGHT_FORWARD:
             case CROSS_LEFT_FORWARD:
             case CROSS_RIGHT_BACKWARD:
@@ -57,13 +59,14 @@ public class ValidateMoves {
         return Collections.emptyList();
     }
 
-    private static List<Position> linearMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Constance.Colours coinColour) {
+    private static List<Position> linearMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
         int y = currentPosition.getY();
         int stepModifierX = (direction == RIGHT) ? 1 : (direction == LEFT) ? -1 : 0;
         int stepModifierY = (direction == FORWARD) ? 1 : (direction == BACKWARD) ? -1 : 0;
+
 
         for (int i = 0; i < steps; i++) {
             x += stepModifierX;
@@ -74,38 +77,64 @@ public class ValidateMoves {
             }
 
             Square square = board[x][y];
-            if (square.isCoinIsPresent)
-                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(Constance.Coins.KING))
-                    break;
-                else
-                {
-                   positions.add(Position.setPos(x, y));
-                   break;
-                }
 
+            if (square.isCoinIsPresent) {
+                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
+                    break;
+                else {
+                    positions.add(Position.setPos(x, y));
+                    break;
+                }
+            }
             positions.add(Position.setPos(x, y));
         }
 
         return positions;
     }
 
-    private static List<Position> pawnStarting(Position currentPosition, Square[][] board) {
+    private static List<Position> pawnMove(Position currentPosition, Square[][] board) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
         int y = currentPosition.getY();
+        Position defaultPosition = board[x][y].getCoin().defaultPosition;
+        int forwardStep = (x == 1) ? 2 : -2;
+        int defX = defaultPosition.getX();
 
-        if (x == 1 || x == 6) {
-            int forwardStep = (x == 1) ? 2 : -2;
-            boolean isCoinIsPresent = x == 1 ? ((board[x + 2][y].isCoinIsPresent) || (board[x + 1][y].isCoinIsPresent)) : (board[x - 2][y].isCoinIsPresent) || (board[x - 1][y].isCoinIsPresent);
-            if (!isCoinIsPresent)
-                positions.add(Position.setPos(x + forwardStep, y));
+        // Starting move
+        if ((x == 1 || x == 6) && !((board[x + forwardStep][y].isCoinIsPresent) || (board[x + forwardStep / 2][y].isCoinIsPresent))) {
+            positions.add(Position.setPos(x + forwardStep, y));
+        }
+
+        // Forward move
+        int step = (defX < 2) ? 1 : -1;
+        int newX = x + step;
+        if (isValidMove(newX, y) && !board[newX][y].isCoinIsPresent) {
+            positions.add(Position.setPos(newX, y));
+        }
+
+        // Diagonal moves
+        int diagonalStep = (defX < 2) ? 1 : -1;
+        for (int diagonalMove : new int[]{1, -1}) {
+            int newXDiagonal = x + step;
+            int newYDiagonal = y + diagonalStep * diagonalMove;
+            if (isValidMove(newXDiagonal, newYDiagonal) && hasOpponent(board, newXDiagonal, newYDiagonal)) {
+                positions.add(Position.setPos(newXDiagonal, newYDiagonal));
+            }
         }
 
         return positions;
     }
 
-    private static List<Position> diagonalMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Constance.Colours coinColour) {
+    private static boolean isValidMove(int x, int y) {
+        return x >= 0 && x < 7 && y >= 0 && y < 7;
+    }
+
+    private static boolean hasOpponent(Square[][] board, int x, int y) {
+        return isValidMove(x, y) && board[x][y].isCoinIsPresent && !board[x][y].coin.coinName.equals(KING);
+    }
+
+    private static List<Position> diagonalMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -125,7 +154,7 @@ public class ValidateMoves {
             Square square = board[x][y];
 
             if (square.isCoinIsPresent)
-                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(Constance.Coins.KING))
+                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
                     break;
                 else
                 {
@@ -139,7 +168,7 @@ public class ValidateMoves {
         return positions;
     }
 
-    private static List<Position> knightMove(Position currentPosition, Square[][] board, Constance.Colours coinColour) {
+    private static List<Position> knightMove(Position currentPosition, Square[][] board, Colours coinColour) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -157,7 +186,7 @@ public class ValidateMoves {
                 Square square = board[newX][newY];
 
                 if (square.isCoinIsPresent)
-                    if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(Constance.Coins.KING))
+                    if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
                         continue;
                 positions.add(Position.setPos(newX, newY));
             }

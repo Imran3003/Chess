@@ -147,10 +147,7 @@ public class DefaultChessBoard {
 
             case PAWN:
             {
-                moveDirVsSteps.put(PAWN_STARTING,2);
-                moveDirVsSteps.put(FORWARD,1);
-                moveDirVsSteps.put(CROSS_RIGHT_FORWARD,1);
-                moveDirVsSteps.put(CROSS_LEFT_FORWARD,1);
+                moveDirVsSteps.put(PAWN_MOVE,2);
                 return moveDirVsSteps;
             }
         }
