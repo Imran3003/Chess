@@ -29,17 +29,17 @@ public class ChessGame
 
         int movingX = movingPosition.getX();
         int movingY = movingPosition.getY();
-
+        
         Square currentSquare = getSquare(currentBoard,x, y);
         Square movingSquare = getSquare(currentBoard,movingX, movingY);
 
-        System.out.println("current square = " + currentSquare);
-        System.out.println("movingSquare = " + movingSquare);
-
-
-//        moving square
         if (!possibleMoves.contains(movingPosition))
             return currentBoard;
+        
+//        moving square
+        coin.setCurrentPosition(Constance.Position.setPos(movingX,movingY));
+        movingSquare.setCoin(coin);
+        movingSquare.setCoinIsPresent(true);
 
         System.out.println("movingSquare after move = " + movingSquare);
 
@@ -54,6 +54,7 @@ public class ChessGame
 //        System.out.println("#######coin = " + coin);
         System.out.println("currentSquare after move = " + currentSquare);
 
+        
         return currentBoard;
 //        System.out.println("c = " + Arrays.deepToString(currentBoard));
     }

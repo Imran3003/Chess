@@ -25,6 +25,7 @@ public class ValidateMoves {
 
     public  Set<Position> getPossibleMoves(Coin coin, Square[][] board)
     {
+        System.out.println("getPossibleMoves() ");
         Position currentPosition = coin.getCurrentPosition();
         Map<MovementDirection, Integer> moveDirVsSteps = coin.getMoveDirVsSteps();
 
@@ -109,7 +110,9 @@ public class ValidateMoves {
         // Forward move
         int step = (defX < 2) ? 1 : -1;
         int newX = x + step;
-        if (isValidMove(newX, y) && !board[newX][y].isCoinIsPresent) {
+
+        if (isValidMove(newX, y) && !board[newX][y].isCoinIsPresent)
+        {
             positions.add(Position.setPos(newX, y));
         }
 
@@ -127,7 +130,7 @@ public class ValidateMoves {
     }
 
     private static boolean isValidMove(int x, int y) {
-        return x >= 0 && x < 7 && y >= 0 && y < 7;
+        return x >= 0 && x <= 7 && y >= 0 && y <= 7;
     }
 
     private static boolean hasOpponent(Square[][] board, int x, int y) {

@@ -3,7 +3,9 @@ package com.ib.chess.controller;
 import com.ib.chess.impl.ChessGame;
 import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.impl.ValidateMoves;
+import com.ib.chess.modules.ClickedCoin;
 import com.ib.chess.modules.Coin;
+import com.ib.chess.modules.PreviousMove;
 import com.ib.chess.modules.Square;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
@@ -15,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.*;
 
 import static com.ib.chess.modules.Constance.*;
-import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
 @RestController
 public class ChessController {
@@ -31,13 +32,21 @@ public class ChessController {
 
     public Square[][] chessboard;
 
+    private PreviousMove previousMove;
+
+    private ClickedCoin clickedCoin;
+
     @RequestMapping("/getPossibleMoves")
     public ModelAndView getPossibleMoves(@RequestParam int x, @RequestParam int y, Model model) {
         // Add your logic to handle the API call using x and y parameters
 
         System.out.println("calling getPossibleMoves");
         if (!chessboard[x][y].isCoinIsPresent)
+        {
+            StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(),false);
+            model.addAttribute("chessboardHtml", board.toString());
             return new ModelAndView("chessBoard");
+        }
 
         Coin coin = chessboard[x][y].getCoin();
 
@@ -46,13 +55,45 @@ public class ChessController {
 
 //        Square[][] squares = chessGame.moveCoin(coin, Position.E2, chessboard, possibleMoves);
 
-        StringBuilder board = setCoinsInChessBoard(chessboard,possibleMoves);
+        StringBuilder board = setCoinsInChessBoard(chessboard,possibleMoves,false);
+
+        clickedCoin = new ClickedCoin(coin,possibleMoves);
 
         model.addAttribute("chessboardHtml", board.toString());
         return new ModelAndView("chessBoard");
         // Add your API call logic here using x and y
     }
-    @RequestMapping("/example")
+
+    @RequestMapping("/moveCoin")
+    public ModelAndView moveCoin(@RequestParam int x, @RequestParam int y, Model model) {
+        System.out.println(" inside MoveCoin");
+
+        Square square = chessboard[x][y];
+        Position movingPosition = square.getSquarePosition();
+        if (clickedCoin == null)
+        {
+            StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(),true);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+        }
+
+        if (previousMove != null && clickedCoin.getClickedCoin().equals(previousMove.getCoin()))
+            System.out.println("cliked coin = prevCoin:");
+
+        Square[][] squares = chessGame.moveCoin(clickedCoin.getClickedCoin(), movingPosition, chessboard, clickedCoin.getPossiblePosition());
+
+        StringBuilder board = setCoinsInChessBoard(squares,clickedCoin.getPossiblePosition(),true);
+
+        previousMove = new PreviousMove(clickedCoin.getClickedCoin(),clickedCoin.getClickedCoin().getCurrentPosition(),movingPosition);
+
+        System.out.println("previousMove = " + previousMove);
+
+        model.addAttribute("chessboardHtml", board.toString());
+        return new ModelAndView("chessBoard");
+    }
+        // Add your logic to handle the API call using x and y parameters
+
+        @RequestMapping("/example")
     private ModelAndView example(Model model)
     {
         System.out.println("currentBoard = " + Arrays.deepToString(chessboard));
@@ -78,7 +119,7 @@ public class ChessController {
         squares[2][1].coin.setCoinName(Coins.PAWN);
         squares[2][1].isCoinIsPresent=true;
 
-        StringBuilder board = setCoinsInChessBoard(squares,Collections.emptySet());
+        StringBuilder board = setCoinsInChessBoard(squares,Collections.emptySet(),false);
 
         model.addAttribute("chessboardHtml", board.toString());
         return new ModelAndView("chessBoard");
@@ -88,13 +129,13 @@ public class ChessController {
     {
         chessboard = defaultChessBoard.getDefaultBoard();
 
-        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet());
+        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(),true);
 
         model.addAttribute("chessboardHtml", chessboardHtml.toString());
         return new ModelAndView("chessBoard");
     }
 
-    private StringBuilder setCoinsInChessBoard(Square[][] board, Set<Position> possibleMoves)
+    private StringBuilder setCoinsInChessBoard(Square[][] board, Set<Position> possibleMoves,boolean isCoinIsMoved)
     {
         StringBuilder chessboardHtml = new StringBuilder();
 
@@ -111,28 +152,35 @@ public class ChessController {
 
                 String squareHtml;
 
-                String onclickAttribute = "";
-
                 String squareId = "square-" + i + "-" + j; // Create a unique id for each square
+
+                String onclickAttribute = "onclick=\"handleSquareClick('" + i + "','" + j + "','" + squareId + "')\"";
+                String onclickAttributeForCoin = "onclick=\"handleCoinClick('" + i + "','" + j + "','" + squareId + "')\"";
+
+
 
                 if (square.isCoinIsPresent) {
                     Coin coin = board[i][j].getCoin();
                     String pieceHtml = getPieceHtml(coin);
 
-                    // Add onclick attribute for squares with coins
-                    onclickAttribute = "onclick=\"handleSquareClick('" + i + "','" + j + "','" + coin.getCoinColour() + "','" + coin.getCoinName() +  "','" + squareId + "')\"";
-
                     if (!possibleMoves.contains(squarePosition))
-                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, coin.getCoinColour(), coin.getCoinName(), onclickAttribute, pieceHtml);
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, coin.getCoinColour(), coin.getCoinName(), onclickAttributeForCoin, pieceHtml);
                     else
-                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, backgroundColor, coin.getCoinColour(), coin.getCoinName(), onclickAttribute, pieceHtml);
+                        if (isCoinIsMoved)
+                            squareHtml = String.format("<div id=\"%s\" class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, coin.getCoinColour(), coin.getCoinName(), onclickAttributeForCoin, pieceHtml);
+                        else
+                            squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, backgroundColor, coin.getCoinColour(), coin.getCoinName(), onclickAttribute, pieceHtml);
 
                     chessboardHtml.append(squareHtml);
-                } else {
+                } else
+                {
                     if (!possibleMoves.contains(squarePosition))
                         squareHtml = String.format("<div id=\"%s\" class=\"square %s\"></div>", squareId, squareClass);
                     else
-                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" %s></div>", squareId, squareClass, backgroundColor, onclickAttribute);
+                        if (isCoinIsMoved)
+                            squareHtml = String.format("<div id=\"%s\" class=\"square %s\" %s></div>", squareId, squareClass, onclickAttribute);
+                        else
+                            squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" %s></div>", squareId, squareClass, backgroundColor, onclickAttribute);
 
                     chessboardHtml.append(squareHtml);
                 }
