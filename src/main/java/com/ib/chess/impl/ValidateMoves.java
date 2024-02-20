@@ -1,6 +1,7 @@
 package com.ib.chess.impl;
 
 import com.ib.chess.modules.Coin;
+import com.ib.chess.modules.PreviousMove;
 import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
@@ -8,6 +9,7 @@ import java.util.*;
 
 import static com.ib.chess.modules.Constance.Coins.KING;
 import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.Coins.PAWN;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
 
 /**
@@ -97,14 +99,25 @@ public class ValidateMoves {
         int x = currentPosition.getX();
         int y = currentPosition.getY();
         Position defaultPosition = board[x][y].getCoin().defaultPosition;
-        int forwardStep = (x == 1) ? 2 : -2;
         int defX = defaultPosition.getX();
+        int forwardStep = (defX < 2) ? 2 : -2;
 
         // Starting move
-        if ((x == 1 || x == 6) && !((board[x + forwardStep][y].isCoinIsPresent) || (board[x + forwardStep / 2][y].isCoinIsPresent))) {
-            positions.add(Position.setPos(x + forwardStep, y));
-        }
 
+        if (defX < 2)
+        {
+            if ((x == 1) && !((board[x + forwardStep][y].isCoinIsPresent) || (board[x + forwardStep / 2][y].isCoinIsPresent)))
+            {
+                positions.add(Position.setPos(x + forwardStep, y));
+            }
+        }
+        else
+        {
+            if ((x == 6 && !((board[x + forwardStep][y].isCoinIsPresent) || (board[x + forwardStep / 2][y].isCoinIsPresent))))
+            {
+                positions.add(Position.setPos(x + forwardStep, y));
+            }
+        }
         // Forward move
         int step = (defX < 2) ? 1 : -1;
         int newX = x + step;
@@ -124,11 +137,59 @@ public class ValidateMoves {
             }
         }
 
+
         return positions;
     }
 
-    private static void pawnSpclMove()
+    public List<Position> pawnSplMove(PreviousMove previousMove, Coin coin)
     {
+        System.out.println("inside pawn spl move");
+        List<Position> positions = new ArrayList<>();
+
+        if (previousMove.getTo().getX() != coin.getCurrentPosition().getX() || coin.getCurrentPosition().getX() != 3 && coin.getCurrentPosition().getX() != 4)
+            return positions;
+
+        Position previousMoveTo = previousMove.getTo();
+        int prevX = previousMoveTo.getX();
+        int prevY = previousMoveTo.getY();
+
+        System.out.println("prevY = " + prevY);
+
+        Position currentPosition = coin.getCurrentPosition();
+        int clickedX = currentPosition.getX();
+        int clickedY = currentPosition.getY();
+
+        System.out.println("clickedY = " + clickedY);
+
+        if (clickedY-1 != prevY && clickedY +1 != prevY)
+            return positions;
+
+        if (clickedY-1 == prevY)
+        {
+            if(coin.getDefaultPosition().getX() < 2)
+            {
+                positions.add(Position.setPos(clickedX +1 , clickedY - 1));
+            }
+            else
+            {
+                positions.add(Position.setPos(clickedX - 1 , clickedY - 1));
+
+            }
+        }
+        else
+        {
+            if(coin.getDefaultPosition().getX() < 2)
+            {
+                positions.add(Position.setPos(clickedX +1 , clickedY + 1));
+            }
+            else
+            {
+                positions.add(Position.setPos(clickedX - 1 , clickedY + 1));
+
+            }
+        }
+
+        return positions;
         /*
         * previos move == pawn
         * clicked coin.position.y-1 || y+1 == previousMove.position --> eligible
@@ -248,5 +309,11 @@ public class ValidateMoves {
         return coinPossiblePositions;
     }
 
+    public void cross_line_move(Map<Coins, Map<Position, Integer>> monitoringMoves, Square[][] chessboard, Coin clickedCoin)
+    {
+        Integer pos = monitoringMoves.getOrDefault(KING, Collections.emptyMap()).getOrDefault(clickedCoin.getDefaultPosition(),null);
+
+
+    }
 }
 
