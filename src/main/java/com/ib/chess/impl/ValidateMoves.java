@@ -6,11 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static com.ib.chess.modules.Constance.Coins.KING;
 import static com.ib.chess.modules.Constance.*;
-import static com.ib.chess.modules.Constance.Coins.*;
-import static com.ib.chess.modules.Constance.MovementDirection;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
-import static com.ib.chess.modules.Constance.Position;
 
 /**
  * ValidateMoves.java
@@ -121,7 +119,7 @@ public class ValidateMoves {
         for (int diagonalMove : new int[]{1, -1}) {
             int newXDiagonal = x + step;
             int newYDiagonal = y + diagonalStep * diagonalMove;
-            if (isValidMove(newXDiagonal, newYDiagonal) && hasOpponent(board, newXDiagonal, newYDiagonal)) {
+            if (isValidMove(newXDiagonal, newYDiagonal) && hasOpponent(board, newXDiagonal, newYDiagonal) && !board[newXDiagonal][newYDiagonal].coin.getCoinColour().equals(board[x][y].coin.getCoinColour())) {
                 positions.add(Position.setPos(newXDiagonal, newYDiagonal));
             }
         }
