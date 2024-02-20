@@ -1,7 +1,7 @@
 package com.ib.chess.controller;
 
-import com.ib.chess.impl.ChessGame;
 import com.ib.chess.board.DefaultChessBoard;
+import com.ib.chess.impl.ChessGame;
 import com.ib.chess.impl.ValidateMoves;
 import com.ib.chess.modules.ClickedCoin;
 import com.ib.chess.modules.Coin;
@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import static com.ib.chess.modules.Constance.*;
 
@@ -50,7 +52,7 @@ public class ChessController {
 
         Coin coin = chessboard[x][y].getCoin();
 
-        Set<Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard);
+        Set<Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard,false);
         System.out.println("possibleMoves = " + possibleMoves);
 
 //        Square[][] squares = chessGame.moveCoin(coin, Position.E2, chessboard, possibleMoves);

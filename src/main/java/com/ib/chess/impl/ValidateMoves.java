@@ -21,7 +21,7 @@ import static com.ib.chess.modules.Constance.MovementDirection.*;
 @Component
 public class ValidateMoves {
 
-    public  Set<Position> getPossibleMoves(Coin coin, Square[][] board)
+    public  Set<Position> getPossibleMoves(Coin coin, Square[][] board, boolean isKingPositionIsReq)
     {
         System.out.println("getPossibleMoves() ");
         Position currentPosition = coin.getCurrentPosition();
@@ -29,7 +29,7 @@ public class ValidateMoves {
 
         Set<Position> coinPossiblePositions = new HashSet<>();
         moveDirVsSteps.forEach((direction, steps) -> {
-            List<Position> positions = getPossiblePositions(direction, steps, currentPosition,board,coin.getCoinColour());
+            List<Position> positions = getPossiblePositions(direction, steps, currentPosition,board,coin.getCoinColour(),isKingPositionIsReq);
             coinPossiblePositions.addAll(positions);
         });
 
@@ -38,27 +38,27 @@ public class ValidateMoves {
 
     }
 
-    private static List<Position> getPossiblePositions(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
+    private static List<Position> getPossiblePositions(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour, boolean isKingPositionIsReq) {
         switch (direction) {
             case LEFT:
             case RIGHT:
             case FORWARD:
             case BACKWARD:
-                return linearMove(direction, steps, currentPosition,board,coinColour);
+                return linearMove(direction, steps, currentPosition,board,coinColour,isKingPositionIsReq);
             case PAWN_MOVE:
-                return pawnMove(currentPosition,board);
+                return pawnMove(currentPosition,board,isKingPositionIsReq);
             case CROSS_RIGHT_FORWARD:
             case CROSS_LEFT_FORWARD:
             case CROSS_RIGHT_BACKWARD:
             case CROSS_LEFT_BACKWARD:
-                return diagonalMove(direction, steps, currentPosition,board,coinColour);
+                return diagonalMove(direction, steps, currentPosition,board,coinColour,isKingPositionIsReq);
             case KNIGHT_L_MOVE:
-                return knightMove(currentPosition,board,coinColour);
+                return knightMove(currentPosition,board,coinColour,isKingPositionIsReq);
         }
         return Collections.emptyList();
     }
 
-    private static List<Position> linearMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
+    private static List<Position> linearMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour, boolean isKingPositionIsReq) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -78,7 +78,7 @@ public class ValidateMoves {
             Square square = board[x][y];
 
             if (square.isCoinIsPresent) {
-                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
+                if (square.getCoin().coinColour == coinColour || (square.getCoin().getCoinName().equals(KING) && !isKingPositionIsReq))
                     break;
                 else {
                     positions.add(Position.setPos(x, y));
@@ -91,7 +91,7 @@ public class ValidateMoves {
         return positions;
     }
 
-    private static List<Position> pawnMove(Position currentPosition, Square[][] board) {
+    private static List<Position> pawnMove(Position currentPosition, Square[][] board, boolean isKingPositionIsReq) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -119,7 +119,7 @@ public class ValidateMoves {
         for (int diagonalMove : new int[]{1, -1}) {
             int newXDiagonal = x + step;
             int newYDiagonal = y + diagonalStep * diagonalMove;
-            if (isValidMove(newXDiagonal, newYDiagonal) && hasOpponent(board, newXDiagonal, newYDiagonal) && !board[newXDiagonal][newYDiagonal].coin.getCoinColour().equals(board[x][y].coin.getCoinColour())) {
+            if (isValidMove(newXDiagonal, newYDiagonal) && hasOpponent(board, newXDiagonal, newYDiagonal,isKingPositionIsReq) && !board[newXDiagonal][newYDiagonal].coin.getCoinColour().equals(board[x][y].coin.getCoinColour())) {
                 positions.add(Position.setPos(newXDiagonal, newYDiagonal));
             }
         }
@@ -127,15 +127,62 @@ public class ValidateMoves {
         return positions;
     }
 
+    private static void pawnSpclMove()
+    {
+        /*
+        * previos move == pawn
+        * clicked coin.position.y-1 || y+1 == previousMove.position --> eligible
+        *
+        * if(y-1)
+        *
+        *    if(x < 2)
+        *      position.add(currenPos.x+1,y-1)
+        *
+        *     else
+        *       position.add(currenPos.x-1,y-1)
+        * else
+        *    if(x < 2)
+        *      position.add(currenPos.x+1,y+1)
+        *
+        *     else
+        *       position.add(currenPos.x-1,y+1)
+        *
+        * && null this opponentPawn and move own pawn to the above mentioned place.
+
+
+        * */
+    }
+
+    private void crosslineMove()
+    {
+        /*
+        * if(clicked  coin is king)
+        * leftCrossLine
+        *    king's moveCount == 0 && leftRook's moveCount == 0 && between king and leftRook coins are null* --> eligible */
+    }
+    private void checkAnyCheck()
+    {
+        /*
+        * get own coin colour
+        *
+        * iterate chess board and get each sqare and check if coin is present and if coin is present then the coin colour = opp coin colour
+        * get Opponent coins All possible Moves and call getPossibleMovesMethod , tag isKingPos is Req = true
+        *
+        * if(possible moves.contains kings position then it is check.
+        * */
+    }
+
     private static boolean isValidMove(int x, int y) {
         return x >= 0 && x <= 7 && y >= 0 && y <= 7;
     }
 
-    private static boolean hasOpponent(Square[][] board, int x, int y) {
+    private static boolean hasOpponent(Square[][] board, int x, int y,boolean isKingPosIsReq) {
+        if (isKingPosIsReq)
+            return isValidMove(x, y) && board[x][y].isCoinIsPresent;
         return isValidMove(x, y) && board[x][y].isCoinIsPresent && !board[x][y].coin.coinName.equals(KING);
     }
 
-    private static List<Position> diagonalMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour) {
+    private static List<Position> diagonalMove(MovementDirection direction, int steps, Position currentPosition, Square[][] board, Colours coinColour, boolean isKingPositionIsReq) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -155,7 +202,7 @@ public class ValidateMoves {
             Square square = board[x][y];
 
             if (square.isCoinIsPresent)
-                if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
+                if (square.getCoin().coinColour == coinColour || (square.getCoin().getCoinName().equals(KING) && !isKingPositionIsReq))
                     break;
                 else
                 {
@@ -169,7 +216,7 @@ public class ValidateMoves {
         return positions;
     }
 
-    private static List<Position> knightMove(Position currentPosition, Square[][] board, Colours coinColour) {
+    private static List<Position> knightMove(Position currentPosition, Square[][] board, Colours coinColour, boolean isKingPositionIsReq) {
         List<Position> positions = new ArrayList<>();
 
         int x = currentPosition.getX();
@@ -187,7 +234,7 @@ public class ValidateMoves {
                 Square square = board[newX][newY];
 
                 if (square.isCoinIsPresent)
-                    if (square.getCoin().coinColour == coinColour || square.getCoin().getCoinName().equals(KING))
+                    if (square.getCoin().coinColour == coinColour || (square.getCoin().getCoinName().equals(KING) && !isKingPositionIsReq))
                         continue;
                 positions.add(Position.setPos(newX, newY));
             }
