@@ -158,6 +158,7 @@ public class Constance
         CROSS_RIGHT_FORWARD,
         CROSS_RIGHT_BACKWARD,
         PAWN_MOVE,
+        KING_CROSS_LINE,
         KNIGHT_L_MOVE
     }
 

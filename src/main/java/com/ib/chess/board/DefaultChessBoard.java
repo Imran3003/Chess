@@ -106,6 +106,7 @@ public class DefaultChessBoard {
                 moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,1);
                 moveDirVsSteps.put(CROSS_RIGHT_FORWARD,1);
                 moveDirVsSteps.put(CROSS_LEFT_FORWARD,1);
+                moveDirVsSteps.put(KING_CROSS_LINE,2);
                 return moveDirVsSteps;
             }
 

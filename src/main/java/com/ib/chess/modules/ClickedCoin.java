@@ -30,5 +30,11 @@ public class ClickedCoin
         this.possiblePosition = possiblePosition;
     }
 
-
+    @Override
+    public String toString() {
+        return "ClickedCoin{" +
+                "clickedCoin=" + clickedCoin +
+                ", possiblePosition=" + possiblePosition +
+                '}';
+    }
 }
