@@ -9,11 +9,10 @@ import com.ib.chess.modules.PreviousMove;
 import com.ib.chess.modules.Square;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +38,24 @@ public class ChessController {
     private ClickedCoin clickedCoin;
 
     private boolean ifClickedCoinIsMoved = false;
+
+
+    public List<Coins> promotingAPawn()
+    {
+        List<Coins> splCoins = new ArrayList<>();
+        splCoins.add(Coins.QUEEN);
+        splCoins.add(Coins.ROOK);
+        splCoins.add(Coins.BISHOP);
+        splCoins.add(Coins.KNIGHT);
+        return splCoins;
+    }
+
+    @PostMapping("/selectSpecialCoin")
+    @ResponseBody
+    public void selectSpecialCoin(@RequestBody Coins selectedCoin) {
+      Coins  selectedSpecialCoin = selectedCoin;
+    }
+
 
     @RequestMapping("/")
     public ModelAndView home(Model model)
@@ -150,6 +167,11 @@ public class ChessController {
         boolean[] coinisMoved ={false};
         Square[][] squares = chessGame.moveCoin(clickedCoin.getClickedCoin(), movingPosition, chessboard, clickedCoin.getPossiblePosition(),coinisMoved);
 
+        if (clickedCoin.getClickedCoin().coinName == Coins.PAWN && (movingPosition.getX() == 0 || movingPosition.getX() == 7))
+        {
+
+        }
+
         StringBuilder board = setCoinsInChessBoard(squares,clickedCoin.getPossiblePosition(),true);
 
         if (coinisMoved[0])
@@ -245,4 +267,20 @@ public class ChessController {
         return pieceSymbol;
     }
 
-}
+    private Coin promotingPawn(Coin coin, Position movingPosition, Square[][] chessboard, Set<Position> possiblePosition, boolean[] coinisMoved)
+    {
+            System.out.println(" pawn is ready to Queen");
+
+            Coin selectedCoin = choose_special_coin(currentBoard);
+
+            System.out.println("selectedCoin = " + selectedCoin);
+
+            selectedCoin.setCoinName(selectedCoin.getCoinName());
+            selectedCoin.setMoveDirVsSteps(selectedCoin.getMoveDirVsSteps());
+            selectedCoin.setCoinColour(coin.getCoinColour());
+            selectedCoin.setCurrentPosition(coin.getCurrentPosition());
+            selectedCoin.setDefaultPosition(coin.getDefaultPosition());
+            selectedCoin.setMoveCount(coin.getMoveCount());
+            return selectedCoin;
+
+    }

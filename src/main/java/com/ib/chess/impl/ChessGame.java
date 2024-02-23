@@ -63,22 +63,6 @@ public class ChessGame
         coin.setMoveCount(coin.getMoveCount() + 1);
         movingSquare.setCoinIsPresent(true);
 
-        if (coin.coinName == Coins.PAWN && (movingSquare.getSquarePosition().getX() == 0 || movingSquare.getSquarePosition().getX() == 7))
-        {
-            System.out.println(" pawn is ready to Queen");
-            Coin selectedCoin = choose_special_coin(currentBoard);
-
-            System.out.println("selectedCoin = " + selectedCoin);
-
-            selectedCoin.setCoinName(selectedCoin.getCoinName());
-            selectedCoin.setMoveDirVsSteps(selectedCoin.getMoveDirVsSteps());
-            selectedCoin.setCoinColour(coin.getCoinColour());
-            selectedCoin.setCurrentPosition(coin.getCurrentPosition());
-            selectedCoin.setDefaultPosition(coin.getDefaultPosition());
-            selectedCoin.setMoveCount(coin.getMoveCount());
-            coin = selectedCoin;
-        }
-
         System.out.println("coin after queen = " + coin);
         movingSquare.setCoin(coin);
 
