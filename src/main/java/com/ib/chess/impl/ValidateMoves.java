@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 import static com.ib.chess.modules.Constance.Coins.KING;
+import static com.ib.chess.modules.Constance.Coins.ROOK;
 import static com.ib.chess.modules.Constance.*;
-import static com.ib.chess.modules.Constance.Coins.PAWN;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
 
 /**
@@ -214,12 +214,124 @@ public class ValidateMoves {
         * */
     }
 
-    private void crosslineMove()
+    public List<Position> castLing(Coin coin, Square[][] chessboard)
     {
-        /*
-        * if(clicked  coin is king)
-        * leftCrossLine
-        *    king's moveCount == 0 && leftRook's moveCount == 0 && between king and leftRook coins are null* --> eligible */
+
+        List<Position> castLingPosition = new ArrayList<>();
+
+        System.out.println("inside castling " );
+
+        System.out.println("coin = " + coin);
+
+        if (coin.getCurrentPosition() != coin.getDefaultPosition() || coin.getMoveCount() != 0)
+            return  castLingPosition;
+
+        Map<String,Position> castLingRookMap = new HashMap<>();
+
+        castLingRookMap.put("TOP_LEFT_ROOK",Position.setPos(0,0));
+        castLingRookMap.put("TOP_RIGHT_ROOK",Position.setPos(0,7));
+        castLingRookMap.put("BOTTOM_LEFT_ROOK",Position.setPos(7,0));
+        castLingRookMap.put("BOTTOM_RIGHT_ROOK",Position.setPos(7,7));
+
+        System.out.println("&*********************$");
+        System.out.println("castLingRookMap = " + castLingRookMap);
+        Coin leftRook;
+        Coin rightRook;
+
+        if (coin.getDefaultPosition().getX() < 2)
+        {
+            System.out.println("coin.getDefaultPos < 2");
+            Position topLeftRookPos = castLingRookMap.get("TOP_LEFT_ROOK");
+            leftRook = chessboard[topLeftRookPos.getX()][topLeftRookPos.getY()].getCoin();
+            System.out.println("leftRook = " + leftRook);
+
+            Position topRightRookPos = castLingRookMap.get("TOP_RIGHT_ROOK");
+            rightRook = chessboard[topRightRookPos.getX()][topRightRookPos.getY()].getCoin();
+            System.out.println("rightRook = " + rightRook);
+        }
+        else
+        {
+            System.out.println("coin.getDefaultPos > 2");
+            Position bottomLeftRookPos = castLingRookMap.get("BOTTOM_LEFT_ROOK");
+            leftRook = chessboard[bottomLeftRookPos.getX()][bottomLeftRookPos.getY()].getCoin();
+
+            Position bottomRightRookPos = castLingRookMap.get("BOTTOM_RIGHT_ROOK");
+            rightRook = chessboard[bottomRightRookPos.getX()][bottomRightRookPos.getY()].getCoin();
+        }
+
+
+        System.out.println("rightRook = " + rightRook);
+        System.out.println("leftRook = " + leftRook);
+
+        if (leftRook.getCoinName() == ROOK && leftRook.getDefaultPosition() == leftRook.getCurrentPosition() && leftRook.getMoveCount() == 0)
+            anyCoinsBtwnAndAddPositions(coin.getCurrentPosition(), chessboard, "LEFT",castLingPosition);
+
+
+        if (rightRook.getCoinName() == ROOK && rightRook.getDefaultPosition() == rightRook.getCurrentPosition() && rightRook.getMoveCount() == 0)
+            anyCoinsBtwnAndAddPositions(coin.getCurrentPosition(), chessboard, "RIGHT", castLingPosition);
+
+        return castLingPosition;
+    }
+
+    private void anyCoinsBtwnAndAddPositions(Position kingPosition, Square[][] chessboard, String direction, List<Position> castLingPositions)
+    {
+        System.out.println("inside anyCoinsBtwnAndAddPositions direction = " + direction);
+
+        Square coin1;
+        Square coin2;
+        Square coin3;
+
+        if (direction.equals("RIGHT"))
+        {
+            if (kingPosition.getX() < 2)
+            {
+                System.out.println("kingPosition.getX() < 2");
+
+                coin1 = chessboard[kingPosition.getX()][kingPosition.getY()+1];
+                coin2 = chessboard[kingPosition.getX()][kingPosition.getY()+2];
+                coin3 = chessboard[kingPosition.getX()][kingPosition.getY()+3];
+            }
+            else
+            {
+                System.out.println("kingPosition.getX() > 2");
+                coin1 = chessboard[kingPosition.getX()][kingPosition.getY()-1];
+                coin2 = chessboard[kingPosition.getX()][kingPosition.getY()-2];
+                coin3 = chessboard[kingPosition.getX()][kingPosition.getY()-3];
+            }
+        }
+        else
+        {
+            System.out.println("Else");
+            if (kingPosition.getX() < 2)
+            {
+                System.out.println("kingPosition.getX() < 2");
+                coin1 = chessboard[kingPosition.getX()][kingPosition.getY()-1];
+                coin2 = chessboard[kingPosition.getX()][kingPosition.getY()-2];
+                coin3 = chessboard[kingPosition.getX()][kingPosition.getY()-3];
+            }
+            else
+            {
+                System.out.println("kingPosition.getX() > 2");
+
+                coin1 = chessboard[kingPosition.getX()][kingPosition.getY()+1];
+                coin2 = chessboard[kingPosition.getX()][kingPosition.getY()+2];
+                coin3 = chessboard[kingPosition.getX()][kingPosition.getY()+3];
+
+            }
+        }
+
+        System.out.println("coin1 = " + coin1);
+        System.out.println("coin2 = " + coin2);
+        System.out.println("coin2 = " + coin3);
+
+        if (!coin1.isCoinIsPresent && !coin2.isCoinIsPresent) {
+            int coin3Y = coin3.getSquarePosition().getY();
+            if (coin3Y == 0 || coin3Y == 7 || !coin3.isCoinIsPresent) {
+                castLingPositions.add(Position.setPos(kingPosition.getX(), coin2.getSquarePosition().getY()));
+            }
+        }
+
+        System.out.println("castLingPositions = " + castLingPositions);
     }
     private void checkAnyCheck()
     {
@@ -309,11 +421,6 @@ public class ValidateMoves {
         return coinPossiblePositions;
     }
 
-    public void cross_line_move(Map<Coins, Map<Position, Integer>> monitoringMoves, Square[][] chessboard, Coin clickedCoin)
-    {
-        Integer pos = monitoringMoves.getOrDefault(KING, Collections.emptyMap()).getOrDefault(clickedCoin.getDefaultPosition(),null);
 
-
-    }
 }
 

@@ -79,7 +79,7 @@ public class DefaultChessBoard {
     {
             int x = position.getX();
             int y = position.getY();
-            board[x][y] = new Square(new Coin(coinName,colour,position,position,setCoinMoves(coinName)),true,Position.setPos(x,y));
+            board[x][y] = new Square(new Coin(coinName,colour,position,position,setCoinMoves(coinName),0),true,Position.setPos(x,y));
 
     }
 
@@ -87,7 +87,7 @@ public class DefaultChessBoard {
         for (Position position : positions) {
             int x = position.getX();
             int y = position.getY();
-            squares[x][y] = new Square(new Coin(PAWN,colour,position,position,setCoinMoves(PAWN)),true,Position.setPos(x,y));
+            squares[x][y] = new Square(new Coin(PAWN,colour,position,position,setCoinMoves(PAWN),0),true,Position.setPos(x,y));
         }
     }
     public static Map<MovementDirection, Integer> setCoinMoves(Coins coin)
@@ -106,7 +106,6 @@ public class DefaultChessBoard {
                 moveDirVsSteps.put(CROSS_RIGHT_BACKWARD,1);
                 moveDirVsSteps.put(CROSS_RIGHT_FORWARD,1);
                 moveDirVsSteps.put(CROSS_LEFT_FORWARD,1);
-                moveDirVsSteps.put(KING_CROSS_LINE,2);
                 return moveDirVsSteps;
             }
 

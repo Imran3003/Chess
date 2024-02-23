@@ -8,7 +8,10 @@ import com.ib.chess.modules.Constance.Position;
 import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * ChessGame.java
@@ -22,19 +25,25 @@ import java.util.*;
 public class ChessGame
 {
 
-    public Square[][] moveCoin(Coin coin, Position movingPosition, Square[][] currentBoard, Set<Position> possibleMoves)
+    public Square[][] moveCoin(Coin coin, Position movingPosition, Square[][] currentBoard, Set<Position> possibleMoves, boolean[] coinIsMoved)
     {
-        Position position = checkIsPawsSplMove(coin, movingPosition, currentBoard);
+        Position pawnSplPosition = checkIsPawsSplMove(coin, movingPosition, currentBoard);
+        boolean isCastLine = checkIsCastLine(coin, movingPosition);
 
-        if (position != null)
+        System.out.println("isCastLine = " + isCastLine);
+
+        if (isCastLine)
+            doCastLing(coin, movingPosition, currentBoard);
+
+        if (pawnSplPosition != null)
         {
-            currentBoard[position.getX()][position.getY()].setCoin(null);
-            currentBoard[position.getX()][position.getY()].setCoinIsPresent(false);
+            currentBoard[pawnSplPosition.getX()][pawnSplPosition.getY()].setCoin(null);
+            currentBoard[pawnSplPosition.getX()][pawnSplPosition.getY()].setCoinIsPresent(false);
         }
 
-        System.out.println("isPawsSplMove = " + position);
+        System.out.println("isPawsSplMove = " + pawnSplPosition);
 
-        System.out.println("currentBoard in move coin = " + Arrays.deepToString(currentBoard));
+//        System.out.println("currentBoard in move coin = " + Arrays.deepToString(currentBoard));
         Position currentPosition = coin.getCurrentPosition();
 
         int x = currentPosition.getX();
@@ -51,17 +60,22 @@ public class ChessGame
         
 //       moving square
         coin.setCurrentPosition(Position.setPos(movingX,movingY));
+        coin.setMoveCount(coin.getMoveCount() + 1);
         movingSquare.setCoinIsPresent(true);
 
-        if (coin.coinName == Coins.PAWN && movingSquare.getSquarePosition().getX() == 0 || movingSquare.getSquarePosition().getX() == 7)
+        if (coin.coinName == Coins.PAWN && (movingSquare.getSquarePosition().getX() == 0 || movingSquare.getSquarePosition().getX() == 7))
         {
-            System.out.println("is pawn ready to Queen");
-            Coin selectedCoin = choose_special_coin();
+            System.out.println(" pawn is ready to Queen");
+            Coin selectedCoin = choose_special_coin(currentBoard);
+
+            System.out.println("selectedCoin = " + selectedCoin);
+
             selectedCoin.setCoinName(selectedCoin.getCoinName());
             selectedCoin.setMoveDirVsSteps(selectedCoin.getMoveDirVsSteps());
             selectedCoin.setCoinColour(coin.getCoinColour());
             selectedCoin.setCurrentPosition(coin.getCurrentPosition());
             selectedCoin.setDefaultPosition(coin.getDefaultPosition());
+            selectedCoin.setMoveCount(coin.getMoveCount());
             coin = selectedCoin;
         }
 
@@ -81,10 +95,65 @@ public class ChessGame
 //        System.out.println("#######coin = " + coin);
         System.out.println("currentSquare after move = " + currentSquare);
 
+
+        coinIsMoved[0] = true;
         
         return currentBoard;
+        
 //        System.out.println("c = " + Arrays.deepToString(currentBoard));
     }
+
+    private static void doCastLing(Coin coin, Position movingPosition, Square[][] currentBoard)
+    {
+        System.out.println("inside doCastLing = ");
+
+        if (coin.getCurrentPosition().getY() + 2 == movingPosition.getY())
+        {
+            Square castLingSqure_rook = currentBoard[coin.getCurrentPosition().getX()][7];
+            Coin castLingCoin_rook = currentBoard[coin.getCurrentPosition().getX()][7].getCoin();
+
+            //move coin
+            Square movingSqure = currentBoard[coin.getCurrentPosition().getX()][coin.getCurrentPosition().getY() + 1];
+            castLingCoin_rook.setCurrentPosition(Position.setPos(coin.getCurrentPosition().getX(), coin.getCurrentPosition().getY() + 1));
+            castLingCoin_rook.setMoveCount(castLingCoin_rook.getMoveCount() + 1);
+
+            movingSqure.setCoin(castLingCoin_rook);
+            movingSqure.setCoinIsPresent(true);
+
+            currentBoard[movingSqure.getSquarePosition().getX()][movingSqure.getSquarePosition().getY()] = movingSqure;
+
+            //oldRookPos
+            castLingSqure_rook.setCoin(null);
+            castLingSqure_rook.setCoinIsPresent(false);
+            currentBoard[castLingSqure_rook.getSquarePosition().getX()][castLingSqure_rook.getSquarePosition().getY()] = castLingSqure_rook;
+        } else {
+            Square castLingSqure_rook = currentBoard[coin.getCurrentPosition().getX()][0];
+            Coin castLingCoin_rook = currentBoard[coin.getCurrentPosition().getX()][0].getCoin();
+
+            //move coin
+            Square movingSqure = currentBoard[coin.getCurrentPosition().getX()][coin.getCurrentPosition().getY() - 1];
+            castLingCoin_rook.setCurrentPosition(Position.setPos(coin.getCurrentPosition().getX(), coin.getCurrentPosition().getY() - 1));
+            castLingCoin_rook.setMoveCount(castLingCoin_rook.getMoveCount() - 1);
+
+            movingSqure.setCoin(castLingCoin_rook);
+            movingSqure.setCoinIsPresent(true);
+
+            currentBoard[movingSqure.getSquarePosition().getX()][movingSqure.getSquarePosition().getY()] = movingSqure;
+
+            //oldRookPos
+            castLingSqure_rook.setCoin(null);
+            castLingSqure_rook.setCoinIsPresent(false);
+            currentBoard[castLingSqure_rook.getSquarePosition().getX()][castLingSqure_rook.getSquarePosition().getY()] = castLingSqure_rook;
+        }
+
+    }
+
+    private boolean checkIsCastLine(Coin coin, Position movingPosition) {
+        return coin.getCoinName() == Coins.KING &&
+                (coin.getCurrentPosition().getY() + 2 == movingPosition.getY() ||
+                        coin.getCurrentPosition().getY() - 2 == movingPosition.getY());
+    }
+
 
     private Position checkIsPawsSplMove(Coin coin, Position movingPosition, Square[][] currentBoard)
     {
@@ -109,7 +178,7 @@ public class ChessGame
     }
 
 
-    public Coin choose_special_coin()
+    public Coin choose_special_coin(Square[][] currentBoard)
     {
         List<Coins> splCoins = new ArrayList<>();
         splCoins.add(Coins.QUEEN);

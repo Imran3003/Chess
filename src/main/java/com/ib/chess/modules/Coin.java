@@ -18,15 +18,17 @@ public class Coin
     public Position defaultPosition;
     public Position currentPosition;
     public Map<MovementDirection,Integer> moveDirVsSteps;
+    public int moveCount;
     public Coin() {
     }
 
-    public Coin(Coins coinName, Colours coinColour, Position defaultPosition,Position currentPosition, Map<MovementDirection, Integer> moveDirVsSteps) {
+    public Coin(Coins coinName, Colours coinColour, Position defaultPosition,Position currentPosition, Map<MovementDirection, Integer> moveDirVsSteps,int moveCount) {
         this.coinName = coinName;
         this.coinColour = coinColour;
         this.defaultPosition = defaultPosition;
         this.currentPosition = currentPosition;
         this.moveDirVsSteps = moveDirVsSteps;
+        this.moveCount = moveCount;
     }
 
     public Position getCurrentPosition() {
@@ -69,6 +71,14 @@ public class Coin
         this.moveDirVsSteps = moveDirVsSteps;
     }
 
+    public int getMoveCount() {
+        return moveCount;
+    }
+
+    public void setMoveCount(int moveCount) {
+        this.moveCount = moveCount;
+    }
+
     @Override
     public String toString() {
         return "Coin{" +
@@ -77,6 +87,7 @@ public class Coin
                 ", defaultPosition=" + defaultPosition +
                 ", currentPosition=" + currentPosition +
                 ", moveDirVsSteps=" + moveDirVsSteps +
+                ", moveCount=" + moveCount +
                 '}';
     }
 }

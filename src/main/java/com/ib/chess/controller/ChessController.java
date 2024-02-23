@@ -3,7 +3,10 @@ package com.ib.chess.controller;
 import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.impl.ChessGame;
 import com.ib.chess.impl.ValidateMoves;
-import com.ib.chess.modules.*;
+import com.ib.chess.modules.ClickedCoin;
+import com.ib.chess.modules.Coin;
+import com.ib.chess.modules.PreviousMove;
+import com.ib.chess.modules.Square;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +16,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.ib.chess.modules.Constance.*;
@@ -38,7 +40,20 @@ public class ChessController {
 
     private boolean ifClickedCoinIsMoved = false;
 
-    Map<Constance.Coins, Map<Position,Integer>> monitoringMoves;
+    @RequestMapping("/")
+    public ModelAndView home(Model model)
+    {
+        chessboard = defaultChessBoard.getDefaultBoard();
+
+        previousMove = null;
+        clickedCoin = null;
+        ifClickedCoinIsMoved = false;
+
+        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(),true);
+
+        model.addAttribute("chessboardHtml", chessboardHtml.toString());
+        return new ModelAndView("chessBoard");
+    }
 
     @RequestMapping("/getPossibleMoves")
     public ModelAndView getPossibleMoves(@RequestParam int x, @RequestParam int y, Model model)
@@ -73,6 +88,14 @@ public class ChessController {
             possibleMoves.addAll(positions);
             System.out.println("Pawn spl positions = " + positions);
         }
+
+        if (coin.getCoinName() == Coins.KING)
+        {
+            List<Position> castLingMoves = validateMoves.castLing(coin, chessboard);
+            possibleMoves.addAll(castLingMoves);
+            System.out.println("castLingMoves = " + castLingMoves);
+        }
+
         System.out.println("possibleMovesAfterAdd = " + possibleMoves);
 //        Square[][] squares = chessGame.moveCoin(coin, Position.E2, chessboard, possibleMoves);
 
@@ -84,10 +107,7 @@ public class ChessController {
 
         ifClickedCoinIsMoved=false;
 
-        if (clickedCoin.getClickedCoin().coinName.equals(Coins.KING))
-        {
-            validateMoves.cross_line_move(monitoringMoves,chessboard,clickedCoin.getClickedCoin());
-        }
+
         if (previousMove != null && clickedCoin.getClickedCoin().getCoinColour().equals(previousMove.getCoin().getCoinColour()))
         {
             System.out.println( "Opponent Move");
@@ -127,49 +147,23 @@ public class ChessController {
 
         System.out.println("currentPosition 1 = " + currentPosition);
 
-        //TODO
-        if (clickedCoin.getClickedCoin().getCoinName() == Coins.PAWN && movingPosition.getX() == 0 || movingPosition.getX() == 7)
-        {
-            System.out.println("is pawn ready to Queen");
-            Coin selectedCoin = chessGame.choose_special_coin();
-        }
+        boolean[] coinisMoved ={false};
+        Square[][] squares = chessGame.moveCoin(clickedCoin.getClickedCoin(), movingPosition, chessboard, clickedCoin.getPossiblePosition(),coinisMoved);
 
-        Square[][] squares = chessGame.moveCoin(clickedCoin.getClickedCoin(), movingPosition, chessboard, clickedCoin.getPossiblePosition());
-        Coin coin = clickedCoin.getClickedCoin();
-
-        if (coin.getCoinName() == Coins.KING || coin.getCoinName() == Coins.ROOK)
-        {
-            monitoringMoves.put(coin.getCoinName(), Collections.singletonMap(coin.getDefaultPosition(),1));
-        }
-
-        System.out.println("currentPosition 2= " + currentPosition);
-        System.out.println("cl 1.5 = " + clickedCoin);
         StringBuilder board = setCoinsInChessBoard(squares,clickedCoin.getPossiblePosition(),true);
 
-        System.out.println("clickedCoin 2 = " + clickedCoin);
-        previousMove = new PreviousMove(clickedCoin.getClickedCoin(),currentPosition,movingPosition);
+        if (coinisMoved[0])
+        {
+            previousMove = new PreviousMove(clickedCoin.getClickedCoin(), currentPosition, movingPosition);
 
-        System.out.println("clickedCoin 3 = " + clickedCoin);
+            System.out.println("previousMove = " + previousMove);
 
-        System.out.println("previousMove = " + previousMove);
-
-        ifClickedCoinIsMoved=true;
+            ifClickedCoinIsMoved = true;
+        }
 
         model.addAttribute("chessboardHtml", board.toString());
         return new ModelAndView("chessBoard");
     }
-
-    @RequestMapping("/")
-    public ModelAndView home(Model model)
-    {
-        chessboard = defaultChessBoard.getDefaultBoard();
-
-        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(),true);
-
-        model.addAttribute("chessboardHtml", chessboardHtml.toString());
-        return new ModelAndView("chessBoard");
-    }
-
     private StringBuilder setCoinsInChessBoard(Square[][] board, Set<Position> possibleMoves,boolean isCoinIsMoved)
     {
         StringBuilder chessboardHtml = new StringBuilder();
