@@ -8,8 +8,6 @@ import com.ib.chess.modules.Constance.Position;
 import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,7 +61,6 @@ public class ChessGame
         coin.setMoveCount(coin.getMoveCount() + 1);
         movingSquare.setCoinIsPresent(true);
 
-        System.out.println("coin after queen = " + coin);
         movingSquare.setCoin(coin);
 
         System.out.println("movingSquare after move = " + movingSquare);
@@ -159,18 +156,6 @@ public class ChessGame
     public Square getSquare(Square[][] currentBoard,int x, int y)
     {
          return currentBoard[x][y];
-    }
-
-
-    public Coin choose_special_coin(Square[][] currentBoard)
-    {
-        List<Coins> splCoins = new ArrayList<>();
-        splCoins.add(Coins.QUEEN);
-        splCoins.add(Coins.ROOK);
-        splCoins.add(Coins.BISHOP);
-        splCoins.add(Coins.KNIGHT);
-
-        return setSplCoin(Coins.QUEEN);
     }
 
     public Coin setSplCoin(Coins coins)

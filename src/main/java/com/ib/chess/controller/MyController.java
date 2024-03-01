@@ -4,8 +4,6 @@ import com.ib.chess.modules.Constance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
@@ -27,11 +25,11 @@ public class MyController {
         return splCoins;
     }
 
-    @PostMapping("/selectSpecialCoin")
-    @ResponseBody
-    public void selectSpecialCoin(@RequestBody Constance.Coins selectedCoin) {
-        selectedSpecialCoin = selectedCoin;
-    }
+//    @PostMapping("/selectSpecialCoin")
+//    @ResponseBody
+//    public void selectSpecialCoin(@RequestBody Constance.Coins selectedCoin) {
+//        selectedSpecialCoin = selectedCoin;
+//    }
 
     public Constance.Coins getSelectedSpecialCoin() {
         return selectedSpecialCoin;

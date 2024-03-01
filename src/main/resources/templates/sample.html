@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* Your CSS styles here */
+    </style>
+</head>
+<body>
+
+<h2>List Group</h2>
+<p>Transform a basic list into a list group:</p>
+
+<ul>
+    <li id="QUEEN" class="square" style="cursor: pointer;" onclick="sendToBackend('QUEEN')">Queen</li>
+    <li id="ROOK" class="square" style="cursor: pointer;" onclick="sendToBackend('ROOK')">Rook</li>
+    <li id="KNIGHT" class="square" style="cursor: pointer;" onclick="sendToBackend('KNIGHT')">Knight</li>
+    <li id="BISHOP" class="square" style="cursor: pointer;" onclick="sendToBackend('BISHOP')">Bishop</li>
+</ul>
+
+<script>
+    function sendToBackend(coin) {
+        // Your JavaScript logic to send the coin to the backend
+        console.log('Sending coin to backend:', coin);
+    }
+</script>
+
+</body>
+</html>

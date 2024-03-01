@@ -1,13 +1,10 @@
 package com.ib.chess;
 
-import com.ib.chess.impl.ValidateMoves;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
-import com.ib.chess.modules.Square;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
@@ -23,12 +20,16 @@ public class TestMain
     
     public static void main(String[] args)
     {
-
+        boolean a = false;
+        System.out.println("a = " + a);
+        getPossibleMv(a);
+        System.out.println("a = " + a);
 //        filter_moves();
     }
 
-    private static void getPossibleMv()
+    private static void getPossibleMv(boolean a)
     {
+        a = true;
 //        Set<Constance.Position> possibleMoves = ValidateMoves.getPossibleMoves(extracted(),new Square[][]{});
 //        System.out.println("possibleMoves = " + possibleMoves);
     }
