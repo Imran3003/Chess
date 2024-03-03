@@ -41,15 +41,6 @@ public class ChessController {
 
     private boolean ifClickedCoinIsMoved = false;
 
-
-    @RequestMapping("/exe")
-    private ModelAndView sample(Model model)
-    {
-        String promotionPopUp = createPromotionPopUp(A1,Colours.BLACK);
-        model.addAttribute("popup",promotionPopUp);
-        return new ModelAndView("ss");
-    }
-
     @RequestMapping("/promotingPawn")
     public ModelAndView promotingPawn(@RequestParam int x, @RequestParam int y , @RequestParam String coinName, Model model) 
     {
@@ -302,13 +293,13 @@ public class ChessController {
             bishopPieceSymbol = "&#9821;";
         }
 
-        return "<div style=\"width: 40px ; display = 'block'; \">\n" +
-                "<ul style=\"padding: 0;\">" +
-                "    <li id=\"QUEEN\" class=\"square\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','QUEEN')\">" + queenPieceSymbol +"</li>\n" +
-                "    <li id=\"ROOK\" class=\"square\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion ('" + i + "','" + j + "','ROOK')\">" + rookPieceSymbol +"</li>\n" +
-                "    <li id=\"KNIGHT\" class=\"square\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('"+ i + "','" + j + "','KNIGHT')\">" + knightPieceSymbol + "</li>\n" +
-                "    <li id=\"BISHOP\" class=\"square\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','BISHOP')\">" + bishopPieceSymbol + "</li>\n" +
-                "</ul>"+
-                "</div>\n";
-    }
+            return "<div>\n" +
+                    "<ul style=\"padding: 0;\" id=\"promotionList\">" +
+                    "    <li id=\"QUEEN\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','QUEEN')\">" + queenPieceSymbol +"</li>\n" +
+                    "    <li id=\"ROOK\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion ('" + i + "','" + j + "','ROOK')\">" + rookPieceSymbol +"</li>\n" +
+                    "    <li id=\"KNIGHT\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('"+ i + "','" + j + "','KNIGHT')\">" + knightPieceSymbol + "</li>\n" +
+                    "    <li id=\"BISHOP\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','BISHOP')\">" + bishopPieceSymbol + "</li>\n" +
+                    "</ul>"+
+                    "</div>\n";
+        }
 }
