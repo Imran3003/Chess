@@ -26,6 +26,7 @@ public class ChessGame
     public Square[][] moveCoin(Coin coin, Position movingPosition, Square[][] currentBoard, Set<Position> possibleMoves, boolean[] coinIsMoved)
     {
         Position pawnSplPosition = checkIsPawsSplMove(coin, movingPosition, currentBoard);
+        System.out.println("****** pawnSplPosition = " + pawnSplPosition);
         boolean isCastLine = checkIsCastLine(coin, movingPosition);
 
         System.out.println("isCastLine = " + isCastLine);
@@ -138,7 +139,13 @@ public class ChessGame
 
     private Position checkIsPawsSplMove(Coin coin, Position movingPosition, Square[][] currentBoard)
     {
-        if (coin.getCoinName() != Coins.PAWN || currentBoard[movingPosition.getX()][movingPosition.getY()].isCoinIsPresent)
+        System.out.println("checkIsPawnsSplMove ******");
+
+
+        System.out.println("coin = " + coin);
+        System.out.println("movingPosition = " + movingPosition);
+
+        if (coin.getCoinName() != Coins.PAWN || currentBoard[movingPosition.getX()][movingPosition.getY()].isCoinIsPresent || coin.getCurrentPosition() != coin.getDefaultPosition())
            return null;
 
         int y = coin.getCurrentPosition().getY();

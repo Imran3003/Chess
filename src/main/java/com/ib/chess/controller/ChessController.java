@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import static com.ib.chess.modules.Constance.*;
-import static com.ib.chess.modules.Constance.Position.A1;
 
 @RestController
 public class ChessController {
@@ -103,7 +102,8 @@ public class ChessController {
         Set<Position> possibleMoves = validateMoves.getPossibleMoves(coin, chessboard, false);
         System.out.println("possibleMoves = " + possibleMoves);
 
-        if (coin.getCoinName() == Coins.PAWN && previousMove != null && previousMove.getCoin().getCoinName() == Coins.PAWN) {
+        if (coin.getCoinName() == Coins.PAWN && previousMove != null && previousMove.getCoin().getCoinName() == Coins.PAWN)
+        {
             List<Position> positions = validateMoves.pawnSplMove(previousMove, coin);
             possibleMoves.addAll(positions);
             System.out.println("Pawn spl positions = " + positions);

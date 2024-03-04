@@ -146,7 +146,7 @@ public class ValidateMoves {
         System.out.println("inside pawn spl move");
         List<Position> positions = new ArrayList<>();
 
-        if (previousMove.getTo().getX() != coin.getCurrentPosition().getX() || coin.getCurrentPosition().getX() != 3 && coin.getCurrentPosition().getX() != 4)
+        if (previousMove.getTo().getX() != coin.getCurrentPosition().getX() || coin.getCurrentPosition().getX() != 3 && coin.getCurrentPosition().getX() != 4 || coin.getCurrentPosition() != coin.getDefaultPosition())
             return positions;
 
         Position previousMoveTo = previousMove.getTo();
