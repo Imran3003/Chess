@@ -3,8 +3,7 @@ package com.ib.chess;
 import com.ib.chess.modules.Coin;
 import com.ib.chess.modules.Constance;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.ib.chess.modules.Constance.MovementDirection.KNIGHT_L_MOVE;
 
@@ -20,10 +19,11 @@ public class TestMain
     
     public static void main(String[] args)
     {
-        boolean a = false;
-        System.out.println("a = " + a);
-        getPossibleMv(a);
-        System.out.println("a = " + a);
+        validateMoves();
+//        boolean a = false;
+//        System.out.println("a = " + a);
+//        getPossibleMv(a);
+//        System.out.println("a = " + a);
 //        filter_moves();
     }
 
@@ -33,7 +33,25 @@ public class TestMain
 //        Set<Constance.Position> possibleMoves = ValidateMoves.getPossibleMoves(extracted(),new Square[][]{});
 //        System.out.println("possibleMoves = " + possibleMoves);
     }
-    private static void validateMoves() {
+    private static void validateMoves()
+    {
+        Map<String, List<String>> map = new HashMap<>();
+        map.put("a",new ArrayList<>());
+
+        if (!map.containsKey("b"))
+        {
+            List<String> as = new ArrayList<>();
+            as.add("AD");
+            map.put("b", Arrays.asList("SD"));
+        }
+
+        System.out.println("map = " + map);
+
+        List<String> b = map.get("b");
+        b.add("CDFG");
+
+
+        System.out.println("map = " + map);
     }
 
     private static void getDefaultBoard()

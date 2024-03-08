@@ -14,10 +14,17 @@
             padding: 10px;
             display: block; /* Hide popup by default */
         }
-        #promotionList
-        {
-            width: 40px;
+        .mate-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            padding: 10px;
+            width: 100px;
+            height: 50px;
+            display: block; /* Hide popup by default */
         }
+
     </style>
 </head>
 <body>
@@ -32,6 +39,7 @@
 </div>
 
 <div class="popup-container" th:utext="${popup}"></div>
+<div class="mate-container" th:utext="${matemessage}"></div>
 <div class="chessboard" th:utext="${chessboardHtml}">
 </div>
 

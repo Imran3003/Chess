@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.Colours.BLACK;
+import static com.ib.chess.modules.Constance.Colours.WHITE;
+import static com.ib.chess.modules.Constance.Position.D1;
+import static com.ib.chess.modules.Constance.Position.D8;
 
 @RestController
 public class ChessController {
@@ -39,6 +41,16 @@ public class ChessController {
     private ClickedCoin clickedCoin;
 
     private boolean ifClickedCoinIsMoved = false;
+
+    private Position WHITE_KING_POSITION = D1;
+    private Position BLACK_KING_POSITION = D8;
+    private Position COIN_TO_BE_MOVED_KING_POSITION = WHITE_KING_POSITION;
+    private Colours COIN_TO_BE_MOVED = WHITE;
+    Map<Position,List<Position>> coinVsMove;
+
+    private boolean isCheckMate = false;
+
+    private boolean promotingPawnPopUpOpen = false;
 
     @RequestMapping("/promotingPawn")
     public ModelAndView promotingPawn(@RequestParam int x, @RequestParam int y , @RequestParam String coinName, Model model) 
@@ -65,12 +77,11 @@ public class ChessController {
     }
 
     @RequestMapping("/")
-    public ModelAndView home(Model model) {
+    public ModelAndView home(Model model)
+    {
         chessboard = defaultChessBoard.getDefaultBoard();
 
-        previousMove = null;
-        clickedCoin = null;
-        ifClickedCoinIsMoved = false;
+        setAllToDefaultWhenReload();
 
         StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
 
@@ -78,10 +89,26 @@ public class ChessController {
         return new ModelAndView("chessBoard");
     }
 
-    @RequestMapping("/getPossibleMoves")
-    public ModelAndView getPossibleMoves(@RequestParam int x, @RequestParam int y, Model model) {
+    private void setAllToDefaultWhenReload()
+    {
+        previousMove = null;
+        clickedCoin = null;
+        ifClickedCoinIsMoved = false;
 
-        if (previousMove == null && chessboard[x][y].isCoinIsPresent && chessboard[x][y].getCoin().getCoinColour() != Colours.WHITE) {
+        WHITE_KING_POSITION = D1;
+        BLACK_KING_POSITION = D8;
+        COIN_TO_BE_MOVED_KING_POSITION = WHITE_KING_POSITION;
+        COIN_TO_BE_MOVED = WHITE;
+        coinVsMove = null;
+        coinVsMove = validateMoves.getCoinVsMoves(chessboard,COIN_TO_BE_MOVED,WHITE_KING_POSITION);
+
+    }
+
+    @RequestMapping("/getPossibleMoves")
+    public ModelAndView getPossibleMoves(@RequestParam int x, @RequestParam int y, Model model)
+    {
+
+        if (previousMove == null && chessboard[x][y].isCoinIsPresent && chessboard[x][y].getCoin().getCoinColour() != WHITE) {
             System.out.println("First Move white");
             StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(), false);
             model.addAttribute("chessboardHtml", board.toString());
@@ -115,24 +142,34 @@ public class ChessController {
             System.out.println("castLingMoves = " + castLingMoves);
         }
 
-        System.out.println("possibleMovesAfterAdd = " + possibleMoves);
-//        Square[][] squares = chessGame.moveCoin(coin, Position.E2, chessboard, possibleMoves);
-
-        StringBuilder board = setCoinsInChessBoard(chessboard, possibleMoves, false);
-
         clickedCoin = new ClickedCoin(coin, possibleMoves);
+
+        if (previousMove != null && clickedCoin.getClickedCoin().getCoinColour().equals(previousMove.getCoin().getCoinColour())) {
+            System.out.println("Opponent Move");
+            StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+        }
+
 
         System.out.println("clickedCoin 1 = " + clickedCoin);
 
         ifClickedCoinIsMoved = false;
 
 
-        if (previousMove != null && clickedCoin.getClickedCoin().getCoinColour().equals(previousMove.getCoin().getCoinColour())) {
-            System.out.println("Opponent Move");
-            board = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
-            model.addAttribute("chessboardHtml", board.toString());
-            return new ModelAndView("chessBoard");
+        if (!coinVsMove.isEmpty())
+        {
+            System.out.println("coinVsMove is not  empty ");
+
+            System.out.println("coinVsMove = " + coinVsMove);
+
+            possibleMoves = validateMoves.filterPossibleMoves(possibleMoves,coinVsMove,coin.getCurrentPosition());
         }
+        else {
+            possibleMoves = new HashSet<>();
+        }
+
+        StringBuilder board = setCoinsInChessBoard(chessboard, possibleMoves, false);
 
         model.addAttribute("chessboardHtml", board.toString());
         return new ModelAndView("chessBoard");
@@ -142,6 +179,7 @@ public class ChessController {
     @RequestMapping("/moveCoin")
     public ModelAndView moveCoin(@RequestParam int x, @RequestParam int y, Model model) {
         System.out.println(" inside MoveCoin");
+
 
         Square square = chessboard[x][y];
         Position movingPosition = square.getSquarePosition();
@@ -169,7 +207,7 @@ public class ChessController {
         {
             System.out.println("calling promoting pawn = ");
 
-            String promotionPopUp = createPromotionPopUp(movingPosition,Colours.WHITE);
+            String promotionPopUp = createPromotionPopUp(movingPosition, WHITE);
 
             model.addAttribute("popup",promotionPopUp);
             StringBuilder board = setCoinsInChessBoard(squares, clickedCoin.getPossiblePosition(), true);
@@ -188,7 +226,45 @@ public class ChessController {
 
             System.out.println("previousMove = " + previousMove);
 
+            COIN_TO_BE_MOVED = COIN_TO_BE_MOVED == WHITE ? BLACK : WHITE;
+
+            COIN_TO_BE_MOVED_KING_POSITION = COIN_TO_BE_MOVED == WHITE ? WHITE_KING_POSITION : BLACK_KING_POSITION;
+
+            if (clickedCoin.getClickedCoin().getCoinName() == Coins.KING)
+            {
+                if (clickedCoin.getClickedCoin().coinColour == BLACK) {
+                    BLACK_KING_POSITION = movingPosition;
+                }
+                else if (clickedCoin.getClickedCoin().coinColour == WHITE)
+                    WHITE_KING_POSITION = movingPosition;
+            }
+
             ifClickedCoinIsMoved = true;
+
+            coinVsMove = validateMoves.getCoinVsMoves(chessboard,COIN_TO_BE_MOVED,COIN_TO_BE_MOVED_KING_POSITION);
+
+            System.out.println("^^^^ coin vs move ^^^^^ = " + coinVsMove);
+        }
+
+        boolean checkMateOrNot = checkMateOrNot(coinVsMove);
+
+        System.out.println("checkMateOrNot = " + checkMateOrNot);
+
+        if (checkMateOrNot)
+        {
+            System.out.println("insideCheckMate " );
+
+            String checkMateMessage;
+
+            if (validateMoves.checkAnyCheck(chessboard,COIN_TO_BE_MOVED,COIN_TO_BE_MOVED_KING_POSITION))
+                checkMateMessage = createMatePopUP("CheckMate");
+            else
+                checkMateMessage = createMatePopUP("StainMate");
+
+            model.addAttribute("matemessage",checkMateMessage);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+
         }
 
         model.addAttribute("chessboardHtml", board.toString());
@@ -250,22 +326,22 @@ public class ChessController {
 
         switch (coin.getCoinName()) {
             case KING:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9812;" : "&#9818;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9812;" : "&#9818;";
                 break;
             case QUEEN:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9813;" : "&#9819;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9813;" : "&#9819;";
                 break;
             case ROOK:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9814;" : "&#9820;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9814;" : "&#9820;";
                 break;
             case BISHOP:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9815;" : "&#9821;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9815;" : "&#9821;";
                 break;
             case KNIGHT:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9816;" : "&#9822;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9816;" : "&#9822;";
                 break;
             case PAWN:
-                pieceSymbol = (coin.getCoinColour() == Colours.WHITE) ? "&#9817;" : "&#9823;";
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9817;" : "&#9823;";
                 break;
         }
 
@@ -286,7 +362,7 @@ public class ChessController {
         String listItemStyle = "list-style-type: none; cursor: pointer; border: 1px solid black; margin-top: -1px; background-color: #3b6205; padding: 12px; border-radius: 10px;";
         String hoverEffect = "transition: background-color 0.3s ease;";
 
-        if (colour == Colours.BLACK) {
+        if (colour == BLACK) {
             queenPieceSymbol = "&#9819;";
             rookPieceSymbol  = "&#9820;";
             knightPieceSymbol = "&#9822;";
@@ -301,5 +377,26 @@ public class ChessController {
                     "    <li id=\"BISHOP\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','BISHOP')\">" + bishopPieceSymbol + "</li>\n" +
                     "</ul>"+
                     "</div>\n";
+        }
+
+        private String createMatePopUP(String message)
+        {
+
+            return "<div>\n" +
+                    "<p>" + message + "</p> \n" +
+                    "</div> \n";
+        }
+
+        private boolean checkMateOrNot(Map<Position, List<Position>> coinVsMove)
+        {
+            System.out.println(" Inside checkMateOrNot *******" );
+            for (Map.Entry<Position, List<Position>> entry : coinVsMove.entrySet()) {
+                Position k = entry.getKey();
+                List<Position> v = entry.getValue();
+                System.out.println("v = " + v);
+                if (!v.isEmpty())
+                    return false;
+            }
+            return true;
         }
 }

@@ -25,7 +25,7 @@ public class ValidateMoves {
 
     public  Set<Position> getPossibleMoves(Coin coin, Square[][] board, boolean isKingPositionIsReq)
     {
-        System.out.println("getPossibleMoves() ");
+        System.out.println("getPossibleMoves() ::  " + coin.getCoinColour() + "_" +coin.getCoinName());
         Position currentPosition = coin.getCurrentPosition();
         Map<MovementDirection, Integer> moveDirVsSteps = coin.getMoveDirVsSteps();
 
@@ -35,8 +35,7 @@ public class ValidateMoves {
             coinPossiblePositions.addAll(positions);
         });
 
-
-        return  checkKingIsSafeAndFilterMoves(board,coinPossiblePositions);
+        return  coinPossiblePositions;
 
     }
 
@@ -190,28 +189,6 @@ public class ValidateMoves {
         }
 
         return positions;
-        /*
-        * previos move == pawn
-        * clicked coin.position.y-1 || y+1 == previousMove.position --> eligible
-        *
-        * if(y-1)
-        *
-        *    if(x < 2)
-        *      position.add(currenPos.x+1,y-1)
-        *
-        *     else
-        *       position.add(currenPos.x-1,y-1)
-        * else
-        *    if(x < 2)
-        *      position.add(currenPos.x+1,y+1)
-        *
-        *     else
-        *       position.add(currenPos.x-1,y+1)
-        *
-        * && null this opponentPawn and move own pawn to the above mentioned place.
-
-
-        * */
     }
 
     public List<Position> castLing(Coin coin, Square[][] chessboard)
@@ -333,8 +310,41 @@ public class ValidateMoves {
 
         System.out.println("castLingPositions = " + castLingPositions);
     }
-    private void checkAnyCheck()
+    public boolean checkAnyCheck(Square[][] chessboard, Colours coinColour, Position kingPosition)
     {
+        System.out.println("Inside checkAnyCheck");
+
+        System.out.println("KingPosition :::::: " + kingPosition);
+
+        for (Square[] squares : chessboard)
+        {
+            for (Square square : squares)
+            {
+                if (!square.isCoinIsPresent || square.getCoin() == null)
+                {
+                    System.out.println("square in checkAnyCheck coin not present ");
+
+                    continue;
+                }
+
+                System.out.println(" coin is present :: " + square );
+
+                if (square.getCoin().getCoinColour() == coinColour)
+                {
+                    System.out.println("square in checkAnyCheck coin colour same ");
+
+                    continue;
+                }
+
+                Set<Position> possibleMoves = getPossibleMoves(square.getCoin(), chessboard, true);
+
+                if (possibleMoves.contains(kingPosition))
+                    return true;
+
+                }
+
+        }
+        return false;
         /*
         * get own coin colour
         *
@@ -343,6 +353,32 @@ public class ValidateMoves {
         *
         * if(possible moves.contains kings position then it is check.
         * */
+    }
+
+    public Map<Position, List<Position>> getCoinVsMoves(Square[][] chessboard, Colours coinColour, Position kingPosition)
+    {
+        System.out.println("Inside  CoinVsMoves" );
+
+        Map<Position,List<Position>> coinVsMove = new HashMap<>();
+        // white
+        for (Square[] squares : chessboard)
+        {
+            for (Square square : squares)
+            {
+                if (!square.isCoinIsPresent || square.getCoin().getCoinColour() != coinColour)
+                    continue;
+
+                Set<Position> possibleMoves = getPossibleMoves(square.getCoin(), chessboard, false);
+
+                List<Position> positions = checkAnyCheckWithBlockingPosition(possibleMoves, chessboard, coinColour, kingPosition, square.getCoin());
+
+                coinVsMove.put(square.getSquarePosition(), positions);
+
+            }
+        }
+
+        System.out.println("coinVsMove = " + coinVsMove);
+        return coinVsMove;
     }
 
     private static boolean isValidMove(int x, int y) {
@@ -415,12 +451,68 @@ public class ValidateMoves {
 
         return positions;
     }
-
-    private Set<Position> checkKingIsSafeAndFilterMoves(Square[][] board, Set<Position> coinPossiblePositions)
+    public Set<Position> filterPossibleMoves(Set<Position> possibleMoves, Map<Position, List<Position>> coinVsMove, Position currentPosition)
     {
-        return coinPossiblePositions;
+        System.out.println("inside filterPossibleMoves  ");
+
+        System.out.println("possibleMoves = " + possibleMoves + ":::" + "coinVsMove = " + coinVsMove + "::::" + "current Position = " + currentPosition );
+
+        Set<Position> filteredPosition = new HashSet<>();
+
+        for (Position possibleMove : possibleMoves)
+        {
+            List<Position> positions = coinVsMove.get(currentPosition);
+
+            if (positions.contains(possibleMove))
+                    filteredPosition.add(possibleMove);
+
+        }
+
+        return filteredPosition;
     }
 
+    private List<Position> checkAnyCheckWithBlockingPosition(Set<Position> possibleMoves, Square[][] chessboard, Colours coinColour, Position kingPosition, Coin coin)
+    {
+        List<Position> filterPositions = new ArrayList<>();
 
+        for (Position possibleMove : possibleMoves)
+        {
+            Position kingNewPosition = kingPosition;
+
+            Square possibleSq = chessboard[possibleMove.getX()][possibleMove.getY()];
+
+            if (coin.getCoinName() == KING)
+                kingNewPosition = possibleSq.getSquarePosition();
+
+
+            boolean coinStatusForPossibleSq = possibleSq.isCoinIsPresent;
+            Coin coinForPossibleSq = possibleSq.getCoin();
+
+            Position oldCoinPosition = coin.getCurrentPosition();
+            Square oldCoinSq = chessboard[oldCoinPosition.getX()][oldCoinPosition.getY()];
+            boolean oldSqCoinStatus = chessboard[oldCoinPosition.getX()][oldCoinPosition.getY()].isCoinIsPresent;
+
+            possibleSq.isCoinIsPresent = true;
+            possibleSq.setCoin(coin);
+
+            oldCoinSq.setCoin(null);
+            oldCoinSq.setCoinIsPresent(false);
+
+            boolean ch = checkAnyCheck(chessboard, coinColour, kingNewPosition);
+
+            possibleSq.isCoinIsPresent = coinStatusForPossibleSq;
+            possibleSq.setCoin(coinForPossibleSq);
+            oldCoinSq.setCoin(coin);
+            oldCoinSq.setCoinIsPresent(oldSqCoinStatus);
+
+            if (ch)
+                continue;
+
+            filterPositions.add(possibleMove);
+
+        }
+
+        return filterPositions;
+    }
 }
 
