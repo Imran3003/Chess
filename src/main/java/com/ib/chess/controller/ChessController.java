@@ -164,10 +164,14 @@ public class ChessController {
             System.out.println("coinVsMove = " + coinVsMove);
 
             possibleMoves = validateMoves.filterPossibleMoves(possibleMoves,coinVsMove,coin.getCurrentPosition());
+
+            System.out.println("possibleMoves After Filter = " + possibleMoves);
         }
         else {
             possibleMoves = new HashSet<>();
         }
+
+        clickedCoin.setPossiblePosition(possibleMoves);
 
         StringBuilder board = setCoinsInChessBoard(chessboard, possibleMoves, false);
 

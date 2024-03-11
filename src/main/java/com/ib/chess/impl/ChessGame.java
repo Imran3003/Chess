@@ -54,6 +54,9 @@ public class ChessGame
         Square currentSquare = getSquare(currentBoard,x, y);
         Square movingSquare = getSquare(currentBoard,movingX, movingY);
 
+        System.out.println("*&^&*&*^***&*^*&**&*&&***(&(**(*");
+        System.out.println("possibleMoves = " + possibleMoves);
+        System.out.println("movingSquare = " + movingSquare);
         if (!possibleMoves.contains(movingPosition))
             return currentBoard;
         

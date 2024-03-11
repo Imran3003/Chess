@@ -455,7 +455,7 @@ public class ValidateMoves {
     {
         System.out.println("inside filterPossibleMoves  ");
 
-        System.out.println("possibleMoves = " + possibleMoves + ":::" + "coinVsMove = " + coinVsMove + "::::" + "current Position = " + currentPosition );
+        System.out.println("possibleMoves = " + possibleMoves + " ::: " + "coinVsMove = " + coinVsMove + " :::: " + "current Position = " + currentPosition );
 
         Set<Position> filteredPosition = new HashSet<>();
 
