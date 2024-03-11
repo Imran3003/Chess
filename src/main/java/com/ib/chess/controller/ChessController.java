@@ -48,9 +48,18 @@ public class ChessController {
     private Colours COIN_TO_BE_MOVED = WHITE;
     Map<Position,List<Position>> coinVsMove;
 
-    private boolean isCheckMate = false;
+    @RequestMapping("/")
+    public ModelAndView home(Model model)
+    {
+        chessboard = defaultChessBoard.getDefaultBoard();
 
-    private boolean promotingPawnPopUpOpen = false;
+        setAllToDefaultWhenReload();
+
+        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
+
+        model.addAttribute("chessboardHtml", chessboardHtml.toString());
+        return new ModelAndView("chessBoard");
+    }
 
     @RequestMapping("/promotingPawn")
     public ModelAndView promotingPawn(@RequestParam int x, @RequestParam int y , @RequestParam String coinName, Model model) 
@@ -73,19 +82,6 @@ public class ChessController {
         StringBuilder board = setCoinsInChessBoard(chessboard, clickedCoin.getPossiblePosition(), true);
         
         model.addAttribute("chessboardHtml", board.toString());
-        return new ModelAndView("chessBoard");
-    }
-
-    @RequestMapping("/")
-    public ModelAndView home(Model model)
-    {
-        chessboard = defaultChessBoard.getDefaultBoard();
-
-        setAllToDefaultWhenReload();
-
-        StringBuilder chessboardHtml = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
-
-        model.addAttribute("chessboardHtml", chessboardHtml.toString());
         return new ModelAndView("chessBoard");
     }
 
