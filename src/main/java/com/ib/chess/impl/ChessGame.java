@@ -1,14 +1,11 @@
 package com.ib.chess.impl;
 
-import com.ib.chess.board.DefaultChessBoard;
 import com.ib.chess.modules.Coin;
-import com.ib.chess.modules.Constance;
 import com.ib.chess.modules.Constance.Coins;
 import com.ib.chess.modules.Constance.Position;
 import com.ib.chess.modules.Square;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -168,14 +165,5 @@ public class ChessGame
          return currentBoard[x][y];
     }
 
-    public Coin setSplCoin(Coins coins)
-    {
-        Map<Constance.MovementDirection, Integer> movementDirectionIntegerMap = DefaultChessBoard.setCoinMoves(coins);
-
-        Coin coin = new Coin();
-        coin.setMoveDirVsSteps(movementDirectionIntegerMap);
-        coin.setCoinName(coins);
-        return coin;
-    }
 
 }

@@ -1,15 +1,18 @@
-package com.ib.chess.impl;
+package com.ib.chess.utils;
 
-import com.ib.chess.modules.Coin;
-import com.ib.chess.modules.PreviousMove;
-import com.ib.chess.modules.Square;
+import com.ib.chess.board.DefaultChessBoard;
+import com.ib.chess.modules.*;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.Model;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
 
+import static com.ib.chess.modules.Constance.*;
 import static com.ib.chess.modules.Constance.Coins.KING;
 import static com.ib.chess.modules.Constance.Coins.ROOK;
-import static com.ib.chess.modules.Constance.*;
+import static com.ib.chess.modules.Constance.Colours.BLACK;
+import static com.ib.chess.modules.Constance.Colours.WHITE;
 import static com.ib.chess.modules.Constance.MovementDirection.*;
 
 /**
@@ -21,7 +24,7 @@ import static com.ib.chess.modules.Constance.MovementDirection.*;
  */
 
 @Component
-public class ValidateMoves {
+public class ChessUtils {
 
     public  Set<Position> getPossibleMoves(Coin coin, Square[][] board, boolean isKingPositionIsReq)
     {
@@ -140,7 +143,7 @@ public class ValidateMoves {
         return positions;
     }
 
-    public List<Position> pawnSplMove(PreviousMove previousMove, Coin coin)
+    public List<Position> getPawnSplPositions(PreviousMove previousMove, Coin coin)
     {
         System.out.println("inside pawn spl move");
         List<Position> positions = new ArrayList<>();
@@ -191,7 +194,7 @@ public class ValidateMoves {
         return positions;
     }
 
-    public List<Position> castLing(Coin coin, Square[][] chessboard)
+    public List<Position> getCastLingPositions(Coin coin, Square[][] chessboard)
     {
 
         List<Position> castLingPosition = new ArrayList<>();
@@ -241,16 +244,16 @@ public class ValidateMoves {
         System.out.println("leftRook = " + leftRook);
 
         if (leftRook.getCoinName() == ROOK && leftRook.getDefaultPosition() == leftRook.getCurrentPosition() && leftRook.getMoveCount() == 0)
-            anyCoinsBtwnAndAddPositions(coin.getCurrentPosition(), chessboard, "LEFT",castLingPosition);
+            validateNoCoinsBetweenRookAndKing(coin.getCurrentPosition(), chessboard, "LEFT",castLingPosition);
 
 
         if (rightRook.getCoinName() == ROOK && rightRook.getDefaultPosition() == rightRook.getCurrentPosition() && rightRook.getMoveCount() == 0)
-            anyCoinsBtwnAndAddPositions(coin.getCurrentPosition(), chessboard, "RIGHT", castLingPosition);
+            validateNoCoinsBetweenRookAndKing(coin.getCurrentPosition(), chessboard, "RIGHT", castLingPosition);
 
         return castLingPosition;
     }
 
-    private void anyCoinsBtwnAndAddPositions(Position kingPosition, Square[][] chessboard, String direction, List<Position> castLingPositions)
+    private void validateNoCoinsBetweenRookAndKing(Position kingPosition, Square[][] chessboard, String direction, List<Position> castLingPositions)
     {
         System.out.println("inside anyCoinsBtwnAndAddPositions direction = " + direction);
 
@@ -310,7 +313,7 @@ public class ValidateMoves {
 
         System.out.println("castLingPositions = " + castLingPositions);
     }
-    public boolean checkAnyCheck(Square[][] chessboard, Colours coinColour, Position kingPosition)
+    public boolean validateCheckForKing(Square[][] chessboard, Colours coinColour, Position kingPosition)
     {
         System.out.println("Inside checkAnyCheck");
 
@@ -345,14 +348,6 @@ public class ValidateMoves {
 
         }
         return false;
-        /*
-        * get own coin colour
-        *
-        * iterate chess board and get each sqare and check if coin is present and if coin is present then the coin colour = opp coin colour
-        * get Opponent coins All possible Moves and call getPossibleMovesMethod , tag isKingPos is Req = true
-        *
-        * if(possible moves.contains kings position then it is check.
-        * */
     }
 
     public Map<Position, List<Position>> getCoinVsMoves(Square[][] chessboard, Colours coinColour, Position kingPosition)
@@ -370,7 +365,7 @@ public class ValidateMoves {
 
                 Set<Position> possibleMoves = getPossibleMoves(square.getCoin(), chessboard, false);
 
-                List<Position> positions = checkAnyCheckWithBlockingPosition(possibleMoves, chessboard, coinColour, kingPosition, square.getCoin());
+                List<Position> positions = validateCheckWithBlockingCoin(possibleMoves, chessboard, coinColour, kingPosition, square.getCoin());
 
                 coinVsMove.put(square.getSquarePosition(), positions);
 
@@ -461,7 +456,7 @@ public class ValidateMoves {
 
         for (Position possibleMove : possibleMoves)
         {
-            List<Position> positions = coinVsMove.get(currentPosition);
+            List<Position> positions = coinVsMove.getOrDefault(currentPosition, Collections.emptyList());
 
             if (positions.contains(possibleMove))
                     filteredPosition.add(possibleMove);
@@ -471,7 +466,7 @@ public class ValidateMoves {
         return filteredPosition;
     }
 
-    private List<Position> checkAnyCheckWithBlockingPosition(Set<Position> possibleMoves, Square[][] chessboard, Colours coinColour, Position kingPosition, Coin coin)
+    private List<Position> validateCheckWithBlockingCoin(Set<Position> possibleMoves, Square[][] chessboard, Colours coinColour, Position kingPosition, Coin coin)
     {
         List<Position> filterPositions = new ArrayList<>();
 
@@ -498,7 +493,7 @@ public class ValidateMoves {
             oldCoinSq.setCoin(null);
             oldCoinSq.setCoinIsPresent(false);
 
-            boolean ch = checkAnyCheck(chessboard, coinColour, kingNewPosition);
+            boolean ch = validateCheckForKing(chessboard, coinColour, kingNewPosition);
 
             possibleSq.isCoinIsPresent = coinStatusForPossibleSq;
             possibleSq.setCoin(coinForPossibleSq);
@@ -514,5 +509,279 @@ public class ValidateMoves {
 
         return filterPositions;
     }
+
+    public StringBuilder setCoinsInChessBoard(Square[][] board, Set<Position> possibleMoves, boolean isCoinIsMoved)
+    {
+        System.out.println("Inside SetCoinsInCHessBoard possiblePosision = " + possibleMoves);
+
+        StringBuilder chessboardHtml = new StringBuilder();
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                Square square = board[i][j];
+
+                Position squarePosition = square.getSquarePosition();
+
+                String squareClass = (i + j) % 2 == 0 ? "white" : "black";
+
+                String backgroundColor = "background-color: rgba(15, 236, 15, 0.47);";// Set the background color to green
+
+                String squareHtml;
+
+                String squareId = "square-" + i + "-" + j; // Create a unique id for each square
+
+                String onclickAttribute = "onclick=\"handleSquareClick('" + i + "','" + j + "','" + squareId + "')\"";
+                String onclickAttributeForCoin = "onclick=\"handleCoinClick('" + i + "','" + j + "','" + squareId + "')\"";
+//                String onclickAttributeForEmptySquare = "onclick=\"emptySquare('" + i + "','" + j + "','" + squareId + "')\"";
+
+
+                if (square.isCoinIsPresent) {
+                    Coin coin = board[i][j].getCoin();
+                    String pieceHtml = getPieceHtml(coin);
+
+                    if (!possibleMoves.contains(squarePosition))
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, coin.getCoinColour(), coin.getCoinName(), onclickAttributeForCoin, pieceHtml);
+                    else if (isCoinIsMoved)
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, coin.getCoinColour(), coin.getCoinName(), onclickAttributeForCoin, pieceHtml);
+                    else
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" data-coin-colour=\"%s\" data-coin-name=\"%s\" %s>%s</div>", squareId, squareClass, backgroundColor, coin.getCoinColour(), coin.getCoinName(), onclickAttribute, pieceHtml);
+
+                    chessboardHtml.append(squareHtml);
+                } else {
+                    if (!possibleMoves.contains(squarePosition))
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" ></div>", squareId, squareClass);
+                    else if (isCoinIsMoved)
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" %s></div>", squareId, squareClass, onclickAttribute);
+                    else
+                        squareHtml = String.format("<div id=\"%s\" class=\"square %s\" style=\"%s\" %s></div>", squareId, squareClass, backgroundColor, onclickAttribute);
+
+                    chessboardHtml.append(squareHtml);
+                }
+            }
+        }
+        return chessboardHtml;
+    }
+
+    private String getPieceHtml(Coin coin) {
+        String pieceSymbol = "";
+
+        switch (coin.getCoinName()) {
+            case KING:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9812;" : "&#9818;";
+                break;
+            case QUEEN:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9813;" : "&#9819;";
+                break;
+            case ROOK:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9814;" : "&#9820;";
+                break;
+            case BISHOP:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9815;" : "&#9821;";
+                break;
+            case KNIGHT:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9816;" : "&#9822;";
+                break;
+            case PAWN:
+                pieceSymbol = (coin.getCoinColour() == WHITE) ? "&#9817;" : "&#9823;";
+                break;
+        }
+
+        return pieceSymbol;
+    }
+
+    public String createPromotionPopUp(Position position, Colours colour)
+    {
+        System.out.println(" Inside createPromotionPopUp for position = " + position + "&& colour = " + colour);
+
+        int i = position.getX();
+        int j = position.getY();
+
+        String queenPieceSymbol  = "&#9813;";
+        String rookPieceSymbol   = "&#9814;";
+        String knightPieceSymbol = "&#9816;";
+        String bishopPieceSymbol = "&#9815;";
+        String listItemStyle = "list-style-type: none; cursor: pointer; border: 1px solid black; margin-top: -1px; background-color: #3b6205; padding: 12px; border-radius: 10px;";
+        String hoverEffect = "transition: background-color 0.3s ease;";
+
+        if (colour == BLACK) {
+            queenPieceSymbol = "&#9819;";
+            rookPieceSymbol  = "&#9820;";
+            knightPieceSymbol = "&#9822;";
+            bishopPieceSymbol = "&#9821;";
+        }
+
+        return "<div>\n" +
+                "<ul style=\"padding: 0;\" id=\"promotionList\">" +
+                "    <li id=\"QUEEN\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','QUEEN')\">" + queenPieceSymbol +"</li>\n" +
+                "    <li id=\"ROOK\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion ('" + i + "','" + j + "','ROOK')\">" + rookPieceSymbol +"</li>\n" +
+                "    <li id=\"KNIGHT\"  style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('"+ i + "','" + j + "','KNIGHT')\">" + knightPieceSymbol + "</li>\n" +
+                "    <li id=\"BISHOP\" style=\"" + listItemStyle + hoverEffect + "\" onclick=\"pawnPromotion('" + i + "','" + j + "','BISHOP')\">" + bishopPieceSymbol + "</li>\n" +
+                "</ul>"+
+                "</div>\n";
+    }
+
+    public String createMatePopUP(String message)
+    {
+
+        return "<div>\n" +
+                "<p>" + message + "</p> \n" +
+                "</div> \n";
+    }
+
+    public boolean validateCheckMate(Map<Position, List<Position>> coinVsMove)
+    {
+        System.out.println(" Inside checkMateOrNot *******" );
+        for (Map.Entry<Position, List<Position>> entry : coinVsMove.entrySet()) {
+            Position k = entry.getKey();
+            List<Position> v = entry.getValue();
+            System.out.println("v = " + v);
+            if (!v.isEmpty())
+                return false;
+        }
+        return true;
+    }
+
+    public Square[][] setPromotingPawn(int x, int y, String coinName, Square[][] chessboard)
+    {
+        Square promotionSq = chessboard[x][y];
+        Coin promotionSqCoin = promotionSq.getCoin();
+
+        Coin coin = setSplCoin(Coins.valueOf(coinName));
+        coin.setMoveCount(0);
+        coin.setCoinColour(promotionSqCoin.getCoinColour());
+        coin.setCurrentPosition(promotionSqCoin.getCurrentPosition());
+        coin.setDefaultPosition(promotionSqCoin.getDefaultPosition());
+
+        promotionSq.setCoin(coin);
+
+        return chessboard;
+    }
+
+    public Coin setSplCoin(Coins coins)
+    {
+        Map<Constance.MovementDirection, Integer> movementDirectionIntegerMap = DefaultChessBoard.setCoinMoves(coins);
+
+        Coin coin = new Coin();
+        coin.setMoveDirVsSteps(movementDirectionIntegerMap);
+        coin.setCoinName(coins);
+        return coin;
+    }
+
+    public Set<Position> getValidPositions(Coin coin, Square[][] chessboard, PreviousMove previousMove)
+    {
+        System.out.println("coin = " + coin);
+        Set<Position> possibleMoves = getPossibleMoves(coin, chessboard, false);
+        System.out.println("possibleMoves = " + possibleMoves);
+
+        if (coin.getCoinName() == Coins.PAWN && previousMove != null && previousMove.getCoin().getCoinName() == Coins.PAWN)
+        {
+            List<Position> positions = getPawnSplPositions(previousMove, coin);
+            possibleMoves.addAll(positions);
+            System.out.println("Pawn spl positions = " + positions);
+        }
+
+        if (coin.getCoinName() == Coins.KING) {
+            List<Position> castLingMoves = getCastLingPositions(coin, chessboard);
+            possibleMoves.addAll(castLingMoves);
+            System.out.println("castLingMoves = " + castLingMoves);
+        }
+
+        return possibleMoves;
+    }
+
+    public ModelAndView checkIsOpenentMoveAndReturnChessBoard(Colours coinToBeMoved, PreviousMove previousMove, Square[][] chessboard, Model model)
+    {
+        System.out.println(" %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" );
+        System.out.println("previousMove = " + previousMove);
+        System.out.println("clickedCoin = " + coinToBeMoved);
+
+        if (previousMove != null && coinToBeMoved.equals(previousMove.getCoin().getCoinColour())) {
+            System.out.println("Opponent Move");
+            StringBuilder chessBoard = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
+            model.addAttribute("chessboardHtml", chessBoard.toString());
+            return new ModelAndView("chessBoard");
+        }
+        return null;
+    }
+
+    public ModelAndView isValidateCoin(int x, int y, Model model, PreviousMove previousMove, Square[][] chessboard)
+    {
+        if (previousMove == null && chessboard[x][y].isCoinIsPresent && chessboard[x][y].getCoin().getCoinColour() != WHITE) {
+            System.out.println("First Move white");
+            StringBuilder chessBoard = setCoinsInChessBoard(chessboard, Collections.emptySet(), false);
+            model.addAttribute("chessboardHtml", chessBoard.toString());
+            return new ModelAndView("chessBoard");
+        }
+        // Add your logic to handle the API call using x and y parameters
+
+        System.out.println("calling getPossibleMoves");
+        if (!chessboard[x][y].isCoinIsPresent) {
+            StringBuilder chessBoard = setCoinsInChessBoard(chessboard, Collections.emptySet(), false);
+            model.addAttribute("chessboardHtml", chessBoard.toString());
+            return new ModelAndView("chessBoard");
+        }
+        return null;
+    }
+
+    public ModelAndView validateIsValidMove(ClickedCoin clickedCoin, boolean ifClickedCoinIsMoved, Square[][] chessboard, PreviousMove previousMove, Model model) {
+        if (clickedCoin == null || ifClickedCoinIsMoved) {
+            StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+        }
+
+        if (previousMove != null && clickedCoin.getClickedCoin().getCoinColour().equals(previousMove.getCoin().getCoinColour())) {
+            System.out.println("Opponent Move");
+            StringBuilder board = setCoinsInChessBoard(chessboard, Collections.emptySet(), true);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+        }
+        return null;
+    }
+
+    public ModelAndView validateIsPawnPromotion(Model model, Position movingPosition, Square[][] squares, ClickedCoin clickedCoin)
+    {
+        if (clickedCoin.getClickedCoin().coinName == Coins.PAWN && (movingPosition.getX() == 0 || movingPosition.getX() == 7))
+        {
+            System.out.println("calling promoting pawn = ");
+
+            String promotionPopUp = createPromotionPopUp(movingPosition, WHITE);
+
+            model.addAttribute("popup",promotionPopUp);
+            StringBuilder board = setCoinsInChessBoard(squares, clickedCoin.getPossiblePosition(), true);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+
+        }
+        return null;
+    }
+
+    public ModelAndView validateCheckMateOrNot(Model model, StringBuilder board, Map<Position, List<Position>> coinVsMove, Square[][] chessboard, Colours COIN_TO_BE_MOVED, Position COIN_TO_BE_MOVED_KING_POSITION)
+    {
+        boolean checkMate = validateCheckMate(coinVsMove);
+
+        System.out.println("checkMate = " + checkMate);
+
+        if (checkMate)
+        {
+            System.out.println("insideCheckMate " );
+
+            String checkMateMessage;
+
+            if (validateCheckForKing(chessboard,COIN_TO_BE_MOVED,COIN_TO_BE_MOVED_KING_POSITION))
+                checkMateMessage = createMatePopUP("CheckMate");
+            else
+                checkMateMessage = createMatePopUP("StaleMate");
+
+            model.addAttribute("matemessage",checkMateMessage);
+            model.addAttribute("chessboardHtml", board.toString());
+            return new ModelAndView("chessBoard");
+
+        }
+
+        model.addAttribute("chessboardHtml", board.toString());
+        return new ModelAndView("chessBoard");
+    }
+
 }
 

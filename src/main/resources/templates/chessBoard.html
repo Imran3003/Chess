@@ -7,15 +7,6 @@
     <script src="js/Disable&EnableOnclick.js"></script>
 </head>
 <body>
-<div th:inline="javascript">
-    <script th:inline="javascript">
-        function pawnPromotion(i,j,coin)
-        {
-            console.log("inside sendToBackend coin = ",coin)
-            window.location.href = "/promotingPawn?x=" + i + "&y=" + j +"&coinName=" + coin;
-        }
-    </script>
-</div>
 
 <div class="popup-container" th:utext="${popup}"></div>
 

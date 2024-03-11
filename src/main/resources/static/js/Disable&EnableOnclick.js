@@ -36,4 +36,4 @@ function validateMateORpromotionAndDisableOnclick() {
     }
 }
 
-validateMateORpromotionAndDisableOnclick();
+// validateMateORpromotionAndDisableOnclick();
